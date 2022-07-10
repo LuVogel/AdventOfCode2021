@@ -152,26 +152,58 @@ public class Day9 {
         // successor of successor recursively, until there are no successors in same group. (this should work)
 
         ArrayList<Integer> sumList = getGroups(basinLineList);
+        System.out.println("finished recursive");
+        for (Integer sum : sumList) {
+            System.out.println(sum);
+        }
     }
 
     public static ArrayList<Integer> getGroups(ArrayList<BasinObject> basinLineList) {
         ArrayList<Integer> sumList = new ArrayList<>();
         ArrayList<BasinObject> unvisited = new ArrayList<>(basinLineList);
-        int maxLevel = basinLineList.get(basinLineList.size()).level;
-        return getGroupsRecursive(sumList, unvisited,  0, maxLevel, 0);
+        int maxLevel = basinLineList.get(basinLineList.size()-1).level;
+        return getGroupsRecursive(sumList, unvisited,  0, maxLevel, 0, null);
     }
 
     public static ArrayList<Integer> getGroupsRecursive(ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
-                                                        int currentLevel, int maxLevel, int currentSum) {
-        for (BasinObject unv: unvisited) {
-            if (unv.level == currentLevel) {
-                if (currentLevel == 0) {
-                    currentSum += unv.sum;
-                } else {
-
+                                                        int currentLevel, int maxLevel, int currentSum,
+                                                        ArrayList<Integer> indexes) {
+        while (!unvisited.isEmpty()) {
+            for (int i = 0; i < unvisited.size(); i++) { //for (BasinObject unv: unvisited)
+                BasinObject unv = unvisited.get(i);
+                if (unv.level == currentLevel) {
+                    ArrayList<Integer> currentIndexes = new ArrayList<>();
+                    for (int tmpStart = unv.startPoint; tmpStart <= unv.endPoint; tmpStart++) {
+                        currentIndexes.add(tmpStart);
+                    }
+                    if (currentLevel == 0) {
+                        currentSum = unv.sum;
+                        unvisited.remove(unv);
+                        currentLevel += 1;
+                        return getGroupsRecursive(sumList, unvisited,currentLevel, maxLevel, currentSum,
+                                currentIndexes);
+                    } else if (currentLevel < maxLevel) {
+                        boolean checkIndex = false;
+                        for (Integer index: currentIndexes) {
+                            if (indexes.contains(index)) {
+                                checkIndex = true;
+                            }
+                        }
+                        if (checkIndex) {
+                            currentSum += unv.sum;
+                            unvisited.remove(unv);
+                            currentLevel += 1;
+                            return getGroupsRecursive(sumList, unvisited, currentLevel, maxLevel, currentSum,
+                                    currentIndexes);
+                        }
+                    }
                 }
             }
+            sumList.add(currentSum);
+            currentSum = 0;
+            currentLevel = 0;
         }
+
         return sumList;
     }
 
