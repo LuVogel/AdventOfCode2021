@@ -2,26 +2,23 @@ package com.main.day9;
 
 import java.io.*;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.*;
 
 public class Day9 {
 
-    int ROW, COL, LOWPOINT;
-
-    public Day9(int row, int col, int lowPoint) {
-        this.ROW = row;
-        this.COL = col;
-        this.LOWPOINT = lowPoint;
-    }
-
-
-
-
-    private static int[][] readInput() throws IOException {
-        File file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_9_test.txt");
+    private static int[][] readInput() throws IOException, URISyntaxException {
+        String os = System.getProperty("os.name");
+        File file = null;
+        if (os.equals("Mac OS X")) {
+            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_9_test.txt");
+        } else if (os.equals("Windows")) {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_8.txt");
+        } else {
+            System.out.println("OS not detected");
+            System.exit((-1));
+        }
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String map = "";
         String line = "";
@@ -42,59 +39,59 @@ public class Day9 {
         return array;
     }
 
-    private static ArrayList<Day9> getLowPoints() throws IOException {
+    private static ArrayList<LowPointObject> getLowPoints() throws IOException, URISyntaxException {
         int[][] array = readInput();
-        ArrayList<Day9> lowPointList = new ArrayList<>();
+        ArrayList<LowPointObject> lowPointList = new ArrayList<>();
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
                 if (i == 0 && j == 0) {
                     //checkForTopLeftCorner
                     if ((array[i][j] < array[i][j+1]) && (array[i][j] < array[i+1][j])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 } else if (i == 0 && j > 0 && j < array[0].length-1) {
                     //checkForTopBorder
                     if ((array[i][j] < array[i+1][j]) && (array[i][j] < array[i][j-1]) &&
                             (array[i][j] < array[i][j+1])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 } else if (i == 0 && j == array[0].length-1) {
                     //checkForTopRightCorner
                     if ((array[i][j] < array[i+1][j]) && (array[i][j] < array[i][j-1])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 } else if (i > 0 && i < array.length-1 && j == 0) {
                     //checkForLeftBorder
                     if ((array[i][j] < array[i+1][j]) && (array[i][j] < array[i-1][j]) && array[i][j] < array[i][j+1]) {
-                        lowPointList.add(new Day9(i,j,array[i][j]));
+                        lowPointList.add(new LowPointObject(i,j,array[i][j]));
                     }
                 } else if (i > 0 && i < array.length-1 && j == array[0].length-1) {
                     //checkForRightBorder
                     if ((array[i][j] < array[i-1][j]) && (array[i][j] < array[i][j-1]) &&
                             (array[i][j] < array[i+1][j])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 } else if (i == array.length-1 && j == 0) {
                     //checkForDownLeftCorner
                     if ((array[i][j] < array[i-1][j]) && (array[i][j] < array[i][j+1])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 } else if (i == array.length-1 && j == array[0].length-1) {
                     //checkForDownRightCorner
                     if ((array[i][j] < array[i-1][j]) && (array[i][j] < array[i][j-1])) {
-                        lowPointList.add(new Day9(i,j,array[i][j]));
+                        lowPointList.add(new LowPointObject(i,j,array[i][j]));
                     }
                 } else if (i == array.length-1 && j > 0 && j < array[0].length-1) {
                     //checkForDownBorder
                     if ((array[i][j] < array[i-1][j]) && (array[i][j] < array[i][j-1]) &&
                             (array[i][j] < array[i][j+1])) {
-                        lowPointList.add(new Day9(i,j,array[i][j]));
+                        lowPointList.add(new LowPointObject(i,j,array[i][j]));
                     }
                 } else {
                     //checkForAllOtherPoints (middle)
                     if ((array[i][j] < array[i-1][j]) && (array[i][j] < array[i+1][j]) && (array[i][j] < array[i][j-1])
                             && (array[i][j] < array[i][j+1])) {
-                        lowPointList.add(new Day9(i, j, array[i][j]));
+                        lowPointList.add(new LowPointObject(i, j, array[i][j]));
                     }
                 }
 
@@ -108,16 +105,16 @@ public class Day9 {
      * right answer 9.12.21 puzzle 1
      * @throws IOException
      */
-    public static void getPuzzle1() throws IOException {
-        ArrayList<Day9> list = getLowPoints();
+    public static void getPuzzle1() throws IOException, URISyntaxException {
+        ArrayList<LowPointObject> list = getLowPoints();
         int riskLevel = 0;
-        for (Day9 day : list) {
-            riskLevel += day.LOWPOINT + 1;
+        for (LowPointObject lpo : list) {
+            riskLevel += lpo.LOWPOINT + 1;
         }
         System.out.println(riskLevel);
     }
 
-    public static void getPuzzle2() throws IOException {
+    public static void getPuzzle2() throws IOException, URISyntaxException {
         int[][] array = readInput();
         ArrayList<BasinObject> basinLineList = new ArrayList<>();
         int tmp = 0;
@@ -154,65 +151,28 @@ public class Day9 {
         // maybe recursive: check for all successors of current object in level 0, if successor in same group, check
         // successor of successor recursively, until there are no successors in same group. (this should work)
 
-        for (int l = 1; l < array.length; l++) {
-            for (BasinObject obj : basinLineList) {
-                boolean changeID = false;
-                if (obj.level == l) {
-                    //on current level
-                    ArrayList<Integer> currentList = new ArrayList<>();
-                    for (int tmpStart = obj.startPoint; tmpStart <= obj.endPoint; tmpStart++) {
-                        currentList.add(tmpStart);
-                    }
-                    for (BasinObject prevObj : basinLineList) {
-                        if (prevObj.level == l-1) {
-                            ArrayList<Integer> prevList = new ArrayList<>();
-                            for (int prevStart = prevObj.startPoint; prevStart <= prevObj.endPoint; prevStart++) {
-                                prevList.add(prevStart);
-                            }
-                            boolean checkLowerLevel = false;
-                            for (Integer check : currentList) {
-                                if (prevList.contains(check)) {
-                                    checkLowerLevel = true;
-                                }
-                            }
-                            if (checkLowerLevel) {
-                                if (basinMap.get(id) != null) {
-                                    ArrayList<Integer> a = basinMap.get(id);
-                                    a.add(prevObj.sum);
-                                    a.add(obj.sum);
-                                    basinMap.put(id, a);
-                                    changeID = true;
-                                } else {
-                                    ArrayList<Integer> tempList = new ArrayList<>();
-                                    tempList.add(prevObj.sum);
-                                    tempList.add(obj.sum);
-                                    basinMap.put(id, tempList);
-                                    changeID = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (changeID) {
-                    id++;
-                }
-            }
-        }
+        ArrayList<Integer> sumList = getGroups(basinLineList);
+    }
+
+    public static ArrayList<Integer> getGroups(ArrayList<BasinObject> basinLineList) {
         ArrayList<Integer> sumList = new ArrayList<>();
-        for (int i = 0; i < id; i++) {
-            ArrayList<Integer> x = basinMap.get(i);
-            int sum = 0;
-            for (Integer digit : x) {
-                sum += digit;
+        ArrayList<BasinObject> unvisited = new ArrayList<>(basinLineList);
+        int maxLevel = basinLineList.get(basinLineList.size()).level;
+        return getGroupsRecursive(sumList, unvisited,  0, maxLevel, 0);
+    }
+
+    public static ArrayList<Integer> getGroupsRecursive(ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
+                                                        int currentLevel, int maxLevel, int currentSum) {
+        for (BasinObject unv: unvisited) {
+            if (unv.level == currentLevel) {
+                if (currentLevel == 0) {
+                    currentSum += unv.sum;
+                } else {
+
+                }
             }
-            sumList.add(sum);
         }
-        Collections.sort(sumList);
-        Collections.reverse(sumList);
-        System.out.println("1: " + sumList.get(0) + "\n2: " + sumList.get(1) + "\n3: " + sumList.get(2));
-        for (Integer z : sumList) {
-            System.out.println(z);
-        }
+        return sumList;
     }
 
     private static class BasinObject {
@@ -223,6 +183,16 @@ public class Day9 {
             this.endPoint = endPoint;
             this.sum = sum;
             this.level = level;
+        }
+    }
+
+    private static class LowPointObject {
+        int ROW, COL, LOWPOINT;
+
+        public LowPointObject(int row, int col, int lowPoint) {
+            this.ROW = row;
+            this.COL = col;
+            this.LOWPOINT = lowPoint;
         }
     }
 }
