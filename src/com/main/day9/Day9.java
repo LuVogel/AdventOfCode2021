@@ -13,8 +13,8 @@ public class Day9 {
         File file = null;
         if (os.equals("Mac OS X")) {
             file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_9_test.txt");
-        } else if (os.equals("Windows")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_8.txt");
+        } else if (os.equals("Windows 10")) {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_9_test.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
@@ -152,27 +152,64 @@ public class Day9 {
         // successor of successor recursively, until there are no successors in same group. (this should work)
 
         ArrayList<Integer> sumList = getGroups(basinLineList);
+        for (Integer x:sumList) {
+            System.out.println(x);
+        }
     }
 
     public static ArrayList<Integer> getGroups(ArrayList<BasinObject> basinLineList) {
         ArrayList<Integer> sumList = new ArrayList<>();
         ArrayList<BasinObject> unvisited = new ArrayList<>(basinLineList);
-        int maxLevel = basinLineList.get(basinLineList.size()).level;
-        return getGroupsRecursive(sumList, unvisited,  0, maxLevel, 0);
+        return getGroupsRecursive(unvisited.get(0), sumList, unvisited, 0);
     }
 
-    public static ArrayList<Integer> getGroupsRecursive(ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
-                                                        int currentLevel, int maxLevel, int currentSum) {
-        for (BasinObject unv: unvisited) {
-            if (unv.level == currentLevel) {
-                if (currentLevel == 0) {
-                    currentSum += unv.sum;
-                } else {
+    public static ArrayList<Integer> getGroupsRecursive(BasinObject bo, ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
+                                                        int currentSum) {
+        while (!unvisited.isEmpty()) {
+            if (!unvisited.contains(bo)) {
+                bo = unvisited.get(0);
+            }
+            currentSum += bo.sum;
+            unvisited.remove(bo);
+            ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
+            System.out.println("parent: " + bo.startPoint + ", " + bo.endPoint + "succlist: " + succList.size());
+            boolean succCheck = false;
+            for (BasinObject succ : succList) {
+                return getGroupsRecursive(succ, sumList, unvisited, currentSum);
 
+            }
+            sumList.add(currentSum);
+            currentSum = 0;
+
+        }
+
+        return sumList;
+    }
+
+    public static ArrayList<BasinObject> getSuccessor(BasinObject bo, ArrayList<BasinObject> nodes) {
+        ArrayList<BasinObject> list = new ArrayList<>();
+        for (BasinObject x: nodes) {
+            if (bo.level == x.level-1) {
+                ArrayList<Integer> tmp = new ArrayList<>();
+                for (int i = bo.startPoint; i <= bo.endPoint; i++) {
+                    tmp.add(i);
+                }
+                ArrayList<Integer> tmpCurrent = new ArrayList<>();
+                for (int i = x.startPoint; i <= x.endPoint; i++) {
+                    tmpCurrent.add(i);
+                }
+                boolean check = false;
+                for (Integer i: tmp) {
+                    if (tmpCurrent.contains(i)) {
+                        check = true;
+                    }
+                }
+                if (check) {
+                    list.add(x);
                 }
             }
         }
-        return sumList;
+        return list;
     }
 
     private static class BasinObject {
