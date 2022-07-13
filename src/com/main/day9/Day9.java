@@ -165,22 +165,20 @@ public class Day9 {
 
     public static ArrayList<Integer> getGroupsRecursive(BasinObject bo, ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
                                                         int currentSum) {
-        while (!unvisited.isEmpty()) {
-            if (!unvisited.contains(bo)) {
-                bo = unvisited.get(0);
-            }
-            currentSum += bo.sum;
-            unvisited.remove(bo);
-            ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
-            System.out.println("parent: " + bo.startPoint + ", " + bo.endPoint + "succlist: " + succList.size());
-            boolean succCheck = false;
-            for (BasinObject succ : succList) {
-                return getGroupsRecursive(succ, sumList, unvisited, currentSum);
+        if (!unvisited.contains(bo) && !unvisited.isEmpty()) {
+            bo = unvisited.get(0);
+        }
+        currentSum += bo.sum;
+        unvisited.remove(bo);
+        ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
+        for (BasinObject succ : succList) {
+            return getGroupsRecursive(succ, sumList, unvisited, currentSum);
 
-            }
-            sumList.add(currentSum);
-            currentSum = 0;
+        }
 
+        sumList.add(currentSum);
+        if (!unvisited.isEmpty()) {
+            return  getGroupsRecursive(unvisited.get(0), sumList, unvisited, 0);
         }
 
         return sumList;
