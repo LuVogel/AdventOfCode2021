@@ -8,8 +8,6 @@ import java.util.*;
 
 public class Day9 {
 
-    public static int currentSum;
-
     private static int[][] readInput() throws IOException, URISyntaxException {
         String os = System.getProperty("os.name");
         File file = null;
@@ -41,7 +39,7 @@ public class Day9 {
         return array;
     }
 
-    private static ArrayList<LowPointObject> getLowPoints() throws IOException, URISyntaxException {
+    private static PointsAndInputObject getLowPoints() throws IOException, URISyntaxException {
         int[][] array = readInput();
         ArrayList<LowPointObject> lowPointList = new ArrayList<>();
         for (int i = 0; i < array.length; i++) {
@@ -99,7 +97,7 @@ public class Day9 {
 
             }
         }
-        return lowPointList;
+        return new PointsAndInputObject(array, lowPointList);
     }
 
 
@@ -108,7 +106,8 @@ public class Day9 {
      * @throws IOException
      */
     public static void getPuzzle1() throws IOException, URISyntaxException {
-        ArrayList<LowPointObject> list = getLowPoints();
+        PointsAndInputObject paio = getLowPoints();
+        ArrayList<LowPointObject> list = paio.LOWPOINTLIST;
         int riskLevel = 0;
         for (LowPointObject lpo : list) {
             riskLevel += lpo.LOWPOINT + 1;
@@ -116,102 +115,55 @@ public class Day9 {
         System.out.println(riskLevel);
     }
 
+    /**
+     * correct version: solution from reddit
+     * uses getBasins()
+     * @throws IOException
+     * @throws URISyntaxException
+     */
     public static void getPuzzle2() throws IOException, URISyntaxException {
-        int[][] array = readInput();
-        ArrayList<BasinObject> basinLineList = new ArrayList<>();
-        int tmp = 0;
-        for (int i = 0; i < array.length; i++) {
-            int start = -1;
-            for (int j = 0; j < array[0].length; j++) {
-
-                if (array[i][j] != 9) {
-                    if (start == -1) {
-                        start = j;
-                    }
-                    tmp++;
-                    if (j == array[0].length-1) {
-                        basinLineList.add(new BasinObject(start, j, tmp, i));
-                        tmp = 0;
-                    }
-                } else if (array[i][j] == 9 && tmp != 0) {
-                        basinLineList.add(new BasinObject(start, j-1, tmp, i));
-                        tmp = 0;
-                        start = -1;
-                }
-            }
+        PointsAndInputObject paio = getLowPoints();
+        ArrayList<LowPointObject> unvisited = paio.LOWPOINTLIST;
+        ArrayList<Integer> sumList = new ArrayList<>();
+        for (LowPointObject lpo : unvisited) {
+            sumList.add(getBasins(lpo.ROW, lpo.COL, paio.ARRAY));
         }
-
-        ArrayList<Integer> sumList = getGroups(basinLineList);
         Collections.sort(sumList);
         Collections.reverse(sumList);
         int max1 = sumList.get(0);
         int max2 = sumList.get(1);
         int max3 = sumList.get(2);
-        System.out.println("prod 3 top basins = " + max1 +", "+max2 +", "+max3 + ", prod: " + (max1 * max2 * max3));
+        System.out.println("max1, max2, max3 = " + max1 + ", " + max2 + ", " + max3 + ", prod = " + (max1 * max2 * max3));
+
     }
 
-    public static ArrayList<Integer> getGroups(ArrayList<BasinObject> basinLineList) {
-        ArrayList<Integer> sumList = new ArrayList<>();
-        ArrayList<BasinObject> unvisited = new ArrayList<>(basinLineList);
-        while (!unvisited.isEmpty()) {
-            currentSum = 0;
-            unvisited =  getGroupsRecursive(unvisited.get(0), sumList,
-                    unvisited);
-            sumList.add(currentSum);
+    public static int getBasins(int x, int y, int[][] inputArray) {
+        int currentSum = 0;
+        int maxBottom = inputArray.length-1;
+        int maxRight = inputArray[0].length-1;
+        if (inputArray[x][y] == 9 ||inputArray[x][y] == 100) {
+            return currentSum;
         }
-        return sumList;
-    }
-
-    public static ArrayList<BasinObject> getGroupsRecursive(BasinObject bo, ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited) {
-        currentSum += bo.sum;
-        unvisited.remove(bo);
-        ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
-        for (BasinObject succ : succList) {
-            getGroupsRecursive(succ, sumList, unvisited);
+        inputArray[x][y] = 100;
+        currentSum += 1;
+        if (y + 1 <= maxRight) {
+            currentSum += getBasins(x, y + 1, inputArray);
         }
-        return unvisited;
-    }
-
-    public static ArrayList<BasinObject> getSuccessor(BasinObject bo, ArrayList<BasinObject> nodes) {
-        ArrayList<BasinObject> list = new ArrayList<>();
-        for (BasinObject x: nodes) {
-            if (bo.level == x.level-1) {
-                ArrayList<Integer> tmp = new ArrayList<>();
-                for (int i = bo.startPoint; i <= bo.endPoint; i++) {
-                    tmp.add(i);
-                }
-                ArrayList<Integer> tmpCurrent = new ArrayList<>();
-                for (int i = x.startPoint; i <= x.endPoint; i++) {
-                    tmpCurrent.add(i);
-                }
-                boolean check = false;
-                for (Integer i: tmp) {
-                    if (tmpCurrent.contains(i)) {
-                        check = true;
-                    }
-                }
-                if (check) {
-                    list.add(x);
-                }
-            }
+        if (y - 1 >= 0) {
+            currentSum += getBasins(x, y - 1, inputArray);
         }
-        return list;
-    }
-
-    private static class BasinObject {
-        int startPoint, endPoint, sum, level;
-
-        public BasinObject(int startPoint, int endPoint, int sum, int level) {
-            this.startPoint = startPoint;
-            this.endPoint = endPoint;
-            this.sum = sum;
-            this.level = level;
+        if (x + 1 <= maxBottom) {
+            currentSum += getBasins(x + 1, y, inputArray);
         }
+        if (x - 1 >= 0) {
+            currentSum += getBasins(x - 1, y, inputArray);
+        }
+        return currentSum;
     }
+
 
     private static class LowPointObject {
         int ROW, COL, LOWPOINT;
-
         public LowPointObject(int row, int col, int lowPoint) {
             this.ROW = row;
             this.COL = col;
@@ -219,13 +171,13 @@ public class Day9 {
         }
     }
 
-    private static class SumAndUnvisitedObject {
-        int SUM;
-        ArrayList<BasinObject> UNVISITED;
+    private static class PointsAndInputObject {
+        int[][] ARRAY;
+        ArrayList<LowPointObject> LOWPOINTLIST;
 
-        public SumAndUnvisitedObject(int s, ArrayList<BasinObject> u) {
-            this.SUM = s;
-            this.UNVISITED = u;
+        public PointsAndInputObject(int[][] array, ArrayList<LowPointObject> lowPointObject) {
+            this.ARRAY = array;
+            this.LOWPOINTLIST = lowPointObject;
         }
     }
 }
