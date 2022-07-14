@@ -8,13 +8,15 @@ import java.util.*;
 
 public class Day9 {
 
+    public static int currentSum;
+
     private static int[][] readInput() throws IOException, URISyntaxException {
         String os = System.getProperty("os.name");
         File file = null;
         if (os.equals("Mac OS X")) {
             file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_9_test.txt");
         } else if (os.equals("Windows 10")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_9_test.txt");
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_9.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
@@ -140,38 +142,34 @@ public class Day9 {
         }
 
         ArrayList<Integer> sumList = getGroups(basinLineList);
-        for (Integer x:sumList) {
-            System.out.println(x);
-        }
+        Collections.sort(sumList);
+        Collections.reverse(sumList);
+        int max1 = sumList.get(0);
+        int max2 = sumList.get(1);
+        int max3 = sumList.get(2);
+        System.out.println("prod 3 top basins = " + max1 +", "+max2 +", "+max3 + ", prod: " + (max1 * max2 * max3));
     }
 
     public static ArrayList<Integer> getGroups(ArrayList<BasinObject> basinLineList) {
         ArrayList<Integer> sumList = new ArrayList<>();
         ArrayList<BasinObject> unvisited = new ArrayList<>(basinLineList);
-        return getGroupsRecursive(unvisited.get(0), sumList, unvisited, 0);
+        while (!unvisited.isEmpty()) {
+            currentSum = 0;
+            unvisited =  getGroupsRecursive(unvisited.get(0), sumList,
+                    unvisited);
+            sumList.add(currentSum);
+        }
+        return sumList;
     }
 
-    public static ArrayList<Integer> getGroupsRecursive(BasinObject bo, ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited,
-                                                        int currentSum) {
-        if (!unvisited.contains(bo) && !unvisited.isEmpty()) {
-            bo = unvisited.get(0);
-        }
+    public static ArrayList<BasinObject> getGroupsRecursive(BasinObject bo, ArrayList<Integer> sumList, ArrayList<BasinObject> unvisited) {
         currentSum += bo.sum;
         unvisited.remove(bo);
         ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
         for (BasinObject succ : succList) {
-            System.out.println("rec-call on succ-object: " + succ.startPoint + "," + succ.endPoint);
-            return getGroupsRecursive(succ, sumList, unvisited, currentSum);
-
+            getGroupsRecursive(succ, sumList, unvisited);
         }
-        System.out.println("add final sum" + " " + currentSum);
-        sumList.add(currentSum);
-        if (!unvisited.isEmpty()) {
-            System.out.println("rec-call for new group");
-            return  getGroupsRecursive(unvisited.get(0), sumList, unvisited, 0);
-        }
-
-        return sumList;
+        return unvisited;
     }
 
     public static ArrayList<BasinObject> getSuccessor(BasinObject bo, ArrayList<BasinObject> nodes) {
@@ -218,6 +216,16 @@ public class Day9 {
             this.ROW = row;
             this.COL = col;
             this.LOWPOINT = lowPoint;
+        }
+    }
+
+    private static class SumAndUnvisitedObject {
+        int SUM;
+        ArrayList<BasinObject> UNVISITED;
+
+        public SumAndUnvisitedObject(int s, ArrayList<BasinObject> u) {
+            this.SUM = s;
+            this.UNVISITED = u;
         }
     }
 }
