@@ -138,18 +138,6 @@ public class Day9 {
                 }
             }
         }
-        for (BasinObject obj : basinLineList) {
-            System.out.println("start = " + obj.startPoint + ", end = " + obj.endPoint +
-                    ", sum = " + obj.sum + ", level = " + obj.level);
-        }
-        HashMap<Integer, ArrayList<Integer>> basinMap = new HashMap<>();
-        int id = 0;
-        //TODO: change int l = 1 to int l = 0 --> start at lowest level and compare with l+1. If no more unions are
-        // found go to next group in same level and increase id. Since current group is compared with all possible
-        // successor groups, id can be increased, after level increase: what to do with id? --> id 0 from level 0 is in
-        // same group as obj on level 2 --> level 0 & 1 object are already in group (id 0), but current id is increased,
-        // maybe recursive: check for all successors of current object in level 0, if successor in same group, check
-        // successor of successor recursively, until there are no successors in same group. (this should work)
 
         ArrayList<Integer> sumList = getGroups(basinLineList);
         for (Integer x:sumList) {
@@ -172,12 +160,14 @@ public class Day9 {
         unvisited.remove(bo);
         ArrayList<BasinObject> succList = getSuccessor(bo, unvisited);
         for (BasinObject succ : succList) {
+            System.out.println("rec-call on succ-object: " + succ.startPoint + "," + succ.endPoint);
             return getGroupsRecursive(succ, sumList, unvisited, currentSum);
 
         }
-
+        System.out.println("add final sum" + " " + currentSum);
         sumList.add(currentSum);
         if (!unvisited.isEmpty()) {
+            System.out.println("rec-call for new group");
             return  getGroupsRecursive(unvisited.get(0), sumList, unvisited, 0);
         }
 
