@@ -2,7 +2,7 @@ package com.main;
 
 
 import com.main.DayEleven.DayEleven;
-
+import com.main.DayTwelve.DayTwelve;
 
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
 
-        DayEleven dayEleven = new DayEleven();
-        dayEleven.Puzzle2();
+        DayTwelve dayTwelve = new DayTwelve();
+        dayTwelve.Puzzle1();
     }
 }
