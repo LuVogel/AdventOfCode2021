@@ -8,8 +8,12 @@ import java.util.*;
 
 public class DayTwelve {
 
-    public int puzzle1_paths = 0;
-    public  Stack<String> currentPathGlobal = new Stack<>();
+    public int duplicateCounter;
+    public int puzzle1_paths;
+    public int puzzle2_paths;
+    public  Stack<String> currentPathGlobal1;
+    public  Stack<String> currentPathGlobal2;
+
     public Map<String, List<String>> currentPathMap = new HashMap<>();
 
     public class Graph {
@@ -37,6 +41,8 @@ public class DayTwelve {
         }
 
         public void countPaths(String source, String destination) {
+            currentPathGlobal1 = new Stack<>();
+            puzzle1_paths = 0;
             count(source, destination);
             System.out.println("Numb of paths between " + source + " and " + destination + " are: " + puzzle1_paths);
 
@@ -45,60 +51,74 @@ public class DayTwelve {
         public void count(String start, String end) {
             if (start.equals(end)) {
                 puzzle1_paths++;
-
             } else {
-                currentPathGlobal.push(start);
+                currentPathGlobal1.push(start);
                 for (String tmp : graph.get(start)) {
                     if (!isSmallCave(tmp)) {
                         count(tmp, end);
                     } else {
-                        if (!currentPathGlobal.contains(tmp)) {
+                        if (!currentPathGlobal1.contains(tmp)) {
                             count(tmp, end);
                         }
                     }
-
                 }
-                currentPathGlobal.pop();
+                currentPathGlobal1.pop();
             }
-
         }
 
         public void countPaths2(String source, String destination) {
+            currentPathGlobal2 = new Stack<>();
+            puzzle2_paths = 0;
+            duplicateCounter = 0;
             count2(source, destination);
-            System.out.println("Numb of paths between " + source + " and " + destination + " are: " + puzzle1_paths);
+            System.out.println("Numb of paths between " + source + " and " + destination + " are: " + puzzle2_paths);
 
         }
 
         public void count2(String start, String end) {
             if (start.equals(end)) {
-                puzzle1_paths++;
+                puzzle2_paths++;
+
             } else {
-                currentPathMap.put(start, new LinkedList<String>());
+                currentPathGlobal2.push(start);
                 for (String tmp : graph.get(start)) {
                     if (!isSmallCave(tmp)) {
-                        count(tmp, end);
+                        count2(tmp, end);
                     } else {
-                        if (!currentPathMap.containsKey(tmp)) {
-                            count(tmp, end);
+                        if (!currentPathGlobal2.contains(tmp)) {
+                            count2(tmp, end);
                         } else if (!tmp.equals("start") && !tmp.equals("end")){
-                            // TODO: doesnt work
-                            boolean noDoubles = true;
-                            for (String tmpString : currentPathMap.keySet()) {
-                                if (isSmallCave(tmpString)) {
-                                    if (currentPathMap.get(tmpString).size() >= 2) {
-                                        noDoubles = false;
-                                    }
-                                }
+                            if (duplicateCounter == 0) {
+                                duplicateCounter++;
+                                count2(tmp, end);
 
                             }
-                            if (noDoubles) {
-                                count(tmp, end);
-                            }
+
                         }
                     }
-
                 }
-                currentPathMap.remove(start);
+
+                currentPathGlobal2.pop();
+                if (!currentPathGlobal2.isEmpty()) {
+                    Map<String, Integer> tempMap = new HashMap<>();
+                    for (String s : currentPathGlobal2) {
+                        if (isSmallCave(s)) {
+                            Integer j = tempMap.get(s);
+                            tempMap.put(s, (j == null) ? 1 : j+1);
+                        }
+                    }
+                    boolean hasDuplicate = false;
+                    for (Map.Entry<String, Integer> val : tempMap.entrySet()) {
+                        if (val.getValue() == 2) {
+                            hasDuplicate = true;
+                        }
+                    }
+                    if (!hasDuplicate) {
+                        duplicateCounter = 0;
+                    }
+                }
+
+
             }
 
         }
@@ -114,6 +134,9 @@ public class DayTwelve {
             return true;
         }
 
+        public void clear() {
+            graph.clear();
+        }
     }
 
     private Graph readInput() {
@@ -122,7 +145,7 @@ public class DayTwelve {
         if (os.equals("Mac OS X")) {
             file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_12_test.txt");
         } else if (os.equals("Windows 10")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_12_test.txt");
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_12.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
@@ -144,12 +167,14 @@ public class DayTwelve {
     public void Puzzle1() {
        Graph graph = readInput();
        graph.countPaths("start", "end");
+       graph.clear();
 
     }
 
     public void Puzzle2() {
         Graph graph = readInput();
         graph.countPaths2("start", "end");
+        graph.clear();
     }
 
 
