@@ -14,6 +14,6 @@ public class Main {
     public static void main(String[] args) throws IOException, URISyntaxException {
 
         DayTwelve dayTwelve = new DayTwelve();
-        dayTwelve.Puzzle1();
+        dayTwelve.Puzzle2();
     }
 }

@@ -10,6 +10,7 @@ public class DayTwelve {
 
     public int puzzle1_paths = 0;
     public  Stack<String> currentPathGlobal = new Stack<>();
+    public Map<String, List<String>> currentPathMap = new HashMap<>();
 
     public class Graph {
 
@@ -62,6 +63,46 @@ public class DayTwelve {
 
         }
 
+        public void countPaths2(String source, String destination) {
+            count2(source, destination);
+            System.out.println("Numb of paths between " + source + " and " + destination + " are: " + puzzle1_paths);
+
+        }
+
+        public void count2(String start, String end) {
+            if (start.equals(end)) {
+                puzzle1_paths++;
+            } else {
+                currentPathMap.put(start, new LinkedList<String>());
+                for (String tmp : graph.get(start)) {
+                    if (!isSmallCave(tmp)) {
+                        count(tmp, end);
+                    } else {
+                        if (!currentPathMap.containsKey(tmp)) {
+                            count(tmp, end);
+                        } else if (!tmp.equals("start") && !tmp.equals("end")){
+                            // TODO: doesnt work
+                            boolean noDoubles = true;
+                            for (String tmpString : currentPathMap.keySet()) {
+                                if (isSmallCave(tmpString)) {
+                                    if (currentPathMap.get(tmpString).size() >= 2) {
+                                        noDoubles = false;
+                                    }
+                                }
+
+                            }
+                            if (noDoubles) {
+                                count(tmp, end);
+                            }
+                        }
+                    }
+
+                }
+                currentPathMap.remove(start);
+            }
+
+        }
+
 
         public boolean isSmallCave(String s)  {
             char[] c = s.toCharArray();
@@ -81,7 +122,7 @@ public class DayTwelve {
         if (os.equals("Mac OS X")) {
             file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_12_test.txt");
         } else if (os.equals("Windows 10")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_12.txt");
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_12_test.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
@@ -104,8 +145,11 @@ public class DayTwelve {
        Graph graph = readInput();
        graph.countPaths("start", "end");
 
+    }
 
-
+    public void Puzzle2() {
+        Graph graph = readInput();
+        graph.countPaths2("start", "end");
     }
 
 
