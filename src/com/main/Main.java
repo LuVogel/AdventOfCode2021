@@ -2,6 +2,7 @@ package com.main;
 
 
 
+import com.main.DayThirteen.DayThirteen;
 import com.main.DayTwelve.DayTwelve;
 
 
@@ -13,10 +14,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
 
-        DayTwelve dayTwelve = new DayTwelve();
-        System.out.println("puzzle1: \n");
-        dayTwelve.Puzzle1();
-        System.out.println("\n\npuzzle2: \n");
-        dayTwelve.Puzzle2();
+        DayThirteen dayThirteen = new DayThirteen();
+        dayThirteen.Puzzle1();
     }
 }
