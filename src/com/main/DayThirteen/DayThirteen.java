@@ -79,7 +79,48 @@ public class DayThirteen {
         while (!foldMap.isEmpty()) {
             int[] currentFold = foldMap.get(0);
             foldMap.remove(0);
-            System.out.println(currentFold[0]+ ", " + currentFold[1]);
+            int foldLine = currentFold[1];
+            if (currentFold[0] == 0) {
+                //fold at x
+                int yLength = currentMap[0].length - 1;
+                yLength /= 2;
+                System.out.println(yLength);
+            } else if (currentFold[0] == 1) {
+                //fold at y
+                int yLength = currentMap.length - 1;
+                yLength /= 2;
+                String[][] tmpArray = new String[yLength][currentMap[0].length];
+                for (int i = 0; i < tmpArray.length; i++) {
+                    for (int j = 0; j < tmpArray[0].length; j++) {
+                        if (currentMap[i][j].equals("X")) {
+                            tmpArray[i][j] = "X";
+                        } else {
+                            tmpArray[i][j] = "0";
+                        }
+                    }
+                }
+                int tmpArrayJCounter = 0;
+                for (int i = 0; i < currentMap.length; i++) {
+                    for (int j = currentMap[0].length-1; j > foldLine; j--) {
+                        if (currentMap[i][j].equals("X")) {
+                            tmpArray[i][tmpArrayJCounter] = "X";
+                        }
+                    }
+                    tmpArrayJCounter++;
+                    if (tmpArrayJCounter >= foldLine) {
+                        break;
+                    }
+                }
+
+                System.out.println("new Array:");
+                for (int i = 0; i < tmpArray.length; i++) {
+                    for (int j = 0; j < tmpArray[0].length; j++) {
+                        System.out.print(tmpArray[i][j]);
+                    }
+                    System.out.println();
+                }
+            }
+
         }
     }
 
