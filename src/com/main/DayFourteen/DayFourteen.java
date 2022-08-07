@@ -31,6 +31,8 @@ public class DayFourteen {
 
         while (steps < maxSteps) {
             steps++;
+            // TODO: go through each instruction: for each instruction check if in String (maybe Hashmap instead of
+            //  string. If Instruction is in String: insert into String/Map (insertion.contains(key) --> faster than string)
             String insertedFormula = "";
             String[] splittedFormula = formulaAsString.split("");
             for (int i = 0; i < splittedFormula.length-1; i++) {
