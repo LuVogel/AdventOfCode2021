@@ -82,9 +82,9 @@ public class DayThirteen {
             int foldLine = currentFold[1];
             if (currentFold[0] == 0) {
                 //fold at x
-                int yLength = currentMap[0].length - 1;
-                yLength /= 2;
-                System.out.println(yLength);
+                int xLength = currentMap[0].length - 1;
+                xLength /= 2;
+                System.out.println(xLength);
             } else if (currentFold[0] == 1) {
                 //fold at y
                 int yLength = currentMap.length - 1;
@@ -99,15 +99,16 @@ public class DayThirteen {
                         }
                     }
                 }
-                int tmpArrayJCounter = 0;
-                for (int i = 0; i < currentMap.length; i++) {
-                    for (int j = currentMap[0].length-1; j > foldLine; j--) {
+                int tmpArrayICounter = 0;
+                for (int i = currentMap.length-1; i > foldLine; i--) {
+                    for (int j = 0; j < currentMap[0].length; j++) {
                         if (currentMap[i][j].equals("X")) {
-                            tmpArray[i][tmpArrayJCounter] = "X";
+                            tmpArray[tmpArrayICounter][j] = "X";
                         }
+
                     }
-                    tmpArrayJCounter++;
-                    if (tmpArrayJCounter >= foldLine) {
+                    tmpArrayICounter++;
+                    if (tmpArrayICounter >= foldLine) {
                         break;
                     }
                 }
@@ -119,6 +120,7 @@ public class DayThirteen {
                     }
                     System.out.println();
                 }
+
             }
 
         }
