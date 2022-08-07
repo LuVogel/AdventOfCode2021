@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 public class DayFourteen {
 
@@ -22,7 +22,14 @@ public class DayFourteen {
 
     private void Puzzle() {
         int steps = 0;
-        while (steps < 4) {
+        int maxSteps = 0;
+        if (puzzleNumber.equals("1")) {
+            maxSteps = 10;
+        } else if (puzzleNumber.equals("2")) {
+            maxSteps = 40;
+        }
+
+        while (steps < maxSteps) {
             steps++;
             String insertedFormula = "";
             String[] splittedFormula = formulaAsString.split("");
@@ -37,17 +44,31 @@ public class DayFourteen {
                 }
             }
             formulaAsString = insertedFormula + splittedFormula[splittedFormula.length-1];
+            System.out.println(steps + " , " + formulaAsString.length());
         }
-        System.out.println(formulaAsString);
+
+        HashMap<String, Long> map = new HashMap<>();
+        String[] splitFormula = formulaAsString.split("");
+        for (String s : splitFormula) {
+            if (map.containsKey(s)) {
+                map.put(s, map.get(s)+1);
+            } else {
+                map.put(s, 1L);
+            }
+        }
+        long maxAmount = Collections.max(map.values());
+        long minAmount = Collections.min(map.values());
+        System.out.println(maxAmount - minAmount);
+
     }
 
     private void readInput() {
         String os = System.getProperty("os.name");
         File file = null;
         if (os.equals("Mac OS X")) {
-            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_14_test.txt");
+            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_14.txt");
         } else if (os.equals("Windows 10")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_14_test.txt");
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_14.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
