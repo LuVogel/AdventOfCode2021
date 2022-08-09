@@ -1,7 +1,5 @@
 package com.main.DayFourteen;
 
-import jdk.dynalink.linker.LinkerServices;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,40 +13,16 @@ public class DayFourteen {
     String formulaAsString;
     ArrayList<String[]> instructionsAsList;
     public DayFourteen(String puzzleNumber) {
-        this.puzzleNumber = puzzleNumber;
         readInput();
-        Puzzle();
+        if (puzzleNumber.equals("1")) {
+            Puzzle1();
+        } else if (puzzleNumber.equals("2")) {
+            Puzzle2();
+        }
+        countOccurrences();
     }
 
-    private void Puzzle() {
-        int steps = 0;
-        int maxSteps = 0;
-        if (puzzleNumber.equals("1")) {
-            maxSteps = 10;
-        } else if (puzzleNumber.equals("2")) {
-            maxSteps = 40;
-        }
-
-        while (steps < maxSteps) {
-            steps++;
-            // TODO: go through each instruction: for each instruction check if in String (maybe Hashmap instead of
-            //  string. If Instruction is in String: insert into String/Map (insertion.contains(key) --> faster than string)
-            String insertedFormula = "";
-            String[] splittedFormula = formulaAsString.split("");
-            for (int i = 0; i < splittedFormula.length-1; i++) {
-                String firstOfPair = splittedFormula[i];
-                String secondOfPair = splittedFormula[i+1];
-                String currentPair = firstOfPair + secondOfPair;
-                for (String[] instructions : instructionsAsList) {
-                    if (currentPair.equals(instructions[0])) {
-                        insertedFormula += firstOfPair + instructions[1];
-                    }
-                }
-            }
-            formulaAsString = insertedFormula + splittedFormula[splittedFormula.length-1];
-            System.out.println(steps + " , " + formulaAsString.length());
-        }
-
+    private void countOccurrences() {
         HashMap<String, Long> map = new HashMap<>();
         String[] splitFormula = formulaAsString.split("");
         for (String s : splitFormula) {
@@ -60,8 +34,38 @@ public class DayFourteen {
         }
         long maxAmount = Collections.max(map.values());
         long minAmount = Collections.min(map.values());
-        System.out.println(maxAmount - minAmount);
+        System.out.println("\nThe difference between the most common element and the least common element is: " +
+                (maxAmount - minAmount));
+    }
 
+    private void Puzzle1() {
+        int steps = 0;
+        while (steps < 10) {
+            steps++;
+            String insertedFormula = "";
+            String[] splitFormula = formulaAsString.split("");
+            for (int i = 0; i < splitFormula.length - 1; i++) {
+                String firstOfPair = splitFormula[i];
+                String secondOfPair = splitFormula[i + 1];
+                String currentPair = firstOfPair + secondOfPair;
+                for (String[] instructions : instructionsAsList) {
+                    if (currentPair.equals(instructions[0])) {
+                        insertedFormula += firstOfPair + instructions[1];
+                    }
+                }
+            }
+            formulaAsString = insertedFormula + splitFormula[splitFormula.length - 1];
+
+        }
+        System.out.println("Solution Day14 (Part 1):");
+    }
+
+    private void Puzzle2() {
+        int steps = 0;
+        while (steps < 40) {
+            steps++;
+
+        }
     }
 
     private void readInput() {
