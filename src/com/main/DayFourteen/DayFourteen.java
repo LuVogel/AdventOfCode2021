@@ -8,63 +8,58 @@ import java.util.*;
 
 public class DayFourteen {
 
-
-    String puzzleNumber;
-    String formulaAsString;
-    ArrayList<String[]> instructionsAsList;
+    HashMap<String, Long> formulaAsMap;
+    HashMap<String, String[]> instructionsAsList;
+    String lastChar;
     public DayFourteen(String puzzleNumber) {
         readInput();
         if (puzzleNumber.equals("1")) {
-            Puzzle1();
+            Puzzle(10);
+            System.out.println("Solution Day14, Part 1 :");
         } else if (puzzleNumber.equals("2")) {
-            Puzzle2();
+            Puzzle(40);
+            System.out.println("Solution Day14, Part 2: ");
         }
         countOccurrences();
     }
 
     private void countOccurrences() {
-        HashMap<String, Long> map = new HashMap<>();
-        String[] splitFormula = formulaAsString.split("");
-        for (String s : splitFormula) {
-            if (map.containsKey(s)) {
-                map.put(s, map.get(s)+1);
-            } else {
-                map.put(s, 1L);
-            }
+        HashMap<String, Long> counterMap = new HashMap<>();
+        Long last = counterMap.getOrDefault(lastChar, 0L);
+        counterMap.put(lastChar, last + 1);
+        for (String s : formulaAsMap.keySet()) {
+            String currentPart = s.split("")[0];
+            Long countAlreadyInMap = formulaAsMap.get(s);
+            Long currentCount = counterMap.getOrDefault(currentPart, 0L);
+            counterMap.put(currentPart, currentCount + countAlreadyInMap);
         }
-        long maxAmount = Collections.max(map.values());
-        long minAmount = Collections.min(map.values());
+        long maxAmount = Collections.max(counterMap.values());
+        long minAmount = Collections.min(counterMap.values());
         System.out.println("\nThe difference between the most common element and the least common element is: " +
                 (maxAmount - minAmount));
     }
 
-    private void Puzzle1() {
+
+    private void Puzzle(int maxSteps) {
         int steps = 0;
-        while (steps < 10) {
+        while (steps < maxSteps) {
             steps++;
-            String insertedFormula = "";
-            String[] splitFormula = formulaAsString.split("");
-            for (int i = 0; i < splitFormula.length - 1; i++) {
-                String firstOfPair = splitFormula[i];
-                String secondOfPair = splitFormula[i + 1];
-                String currentPair = firstOfPair + secondOfPair;
-                for (String[] instructions : instructionsAsList) {
-                    if (currentPair.equals(instructions[0])) {
-                        insertedFormula += firstOfPair + instructions[1];
-                    }
+            HashMap<String, Long> currentFormulaAsMap = new HashMap<>();
+            for (String currentPolymer : formulaAsMap.keySet()) {
+                Long countCurrentPolymer = formulaAsMap.get(currentPolymer);
+                if (instructionsAsList.containsKey(currentPolymer)) {
+                    String[] resultingPolymers = instructionsAsList.get(currentPolymer);
+                    String firstResulting = resultingPolymers[0];
+                    String secondResulting = resultingPolymers[1];
+                    Long countOfFirst = currentFormulaAsMap.getOrDefault(firstResulting, 0L);
+                    Long countOfSecond = currentFormulaAsMap.getOrDefault(secondResulting, 0L);
+                    currentFormulaAsMap.put(firstResulting, countOfFirst + countCurrentPolymer);
+                    currentFormulaAsMap.put(secondResulting, countOfSecond + countCurrentPolymer);
+                } else {
+                    currentFormulaAsMap.put(currentPolymer, countCurrentPolymer);
                 }
             }
-            formulaAsString = insertedFormula + splitFormula[splitFormula.length - 1];
-
-        }
-        System.out.println("Solution Day14 (Part 1):");
-    }
-
-    private void Puzzle2() {
-        int steps = 0;
-        while (steps < 40) {
-            steps++;
-
+            formulaAsMap = currentFormulaAsMap;
         }
     }
 
@@ -79,19 +74,29 @@ public class DayFourteen {
             System.out.println("OS not detected");
             System.exit((-1));
         }
-        formulaAsString = "";
-        instructionsAsList = new ArrayList<>();
+        formulaAsMap = new HashMap<>();
+        instructionsAsList = new HashMap<>();
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
             String line = "";
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains("->")) {
-                    String[] tmp = line.split("");
-                    String pair = tmp[0] + tmp[1];
-                    String toInsert = tmp[tmp.length-1];
-                    instructionsAsList.add(new String[]{pair, toInsert});
+                    String[] tmp = line.split(" -> ");
+                    String firstOfPair = tmp[0].split("")[0];
+                    String secondOfPair = tmp[0].split("")[1];
+                    String pair = firstOfPair + secondOfPair;
+                    String firstPolymer = firstOfPair + tmp[1];
+                    String secondPolymer = tmp[1] + secondOfPair;
+                    instructionsAsList.put(pair, new String[]{firstPolymer, secondPolymer});
                 } else if (!line.isEmpty()) {
-                    formulaAsString = line;
+                    String[] tmp = line.split("");
+                    for (int i = 0; i < tmp.length-1; i++) {
+                        String s = tmp[i] + tmp[i+1];
+                        Long n = formulaAsMap.getOrDefault(s, 0L);
+                        // add pair of input to map. n is 0 if not already in map, otherwise n is count of pairs in formula
+                        formulaAsMap.put(s, n+1);
+                    }
+                    lastChar = tmp[tmp.length-1];
                 }
             }
         } catch (IOException e) {

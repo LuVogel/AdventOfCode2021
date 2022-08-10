@@ -13,19 +13,33 @@ import java.util.Scanner;
 
 public class Main {
 
+    static String day;
+    static String puzzleNumber;
+
     public static void main(String[] args) throws IOException, URISyntaxException {
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter puzzle number (DAY,PUZZLE) \n (eg. 10,1 for puzzle 1, day10 or 13,2 for puzzle 2, day 13: ");
-        String userInput = scanner.nextLine();
-        String[] puzzleArray = userInput.split(",");
-        String day = puzzleArray[0];
-        String puzzleNumber = puzzleArray[1];
+        while (true) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter puzzle number in format XX,X {DAY,PART} or 'quit' to exit program");
+            String userInput = scanner.nextLine();
 
-        if (day.equals("13")) {
-            DayThirteen dayThirteen = new DayThirteen(puzzleNumber);
-        } else if (day.equals("14")) {
-            DayFourteen dayFourteen = new DayFourteen(puzzleNumber);
+            if (userInput.equals("quit")) {
+                break;
+            } else {
+                String[] puzzleArray = userInput.split(",");
+                if (puzzleArray.length == 2) {
+                    day = puzzleArray[0];
+                    puzzleNumber = puzzleArray[1];
+                }
+            }
+
+            if (day.equals("13")) {
+                DayThirteen dayThirteen = new DayThirteen(puzzleNumber);
+            } else if (day.equals("14")) {
+                DayFourteen dayFourteen = new DayFourteen(puzzleNumber);
+            }
         }
+
+
     }
 }
