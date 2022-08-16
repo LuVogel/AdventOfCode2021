@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 public class DayFifteen {
 
+    // TODO: convert 2d array in readInput into Tree. then search shortest path via djkstra, A* or bellman-ford
+
     CustomTree tree;
 
     private class CustomTree {
