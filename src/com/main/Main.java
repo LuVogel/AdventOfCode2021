@@ -2,6 +2,7 @@ package com.main;
 
 
 
+import com.main.DayFifteen.DayFifteen;
 import com.main.DayFourteen.DayFourteen;
 import com.main.DayThirteen.DayThirteen;
 
@@ -37,6 +38,8 @@ public class Main {
                 DayThirteen dayThirteen = new DayThirteen(puzzleNumber);
             } else if (day.equals("14")) {
                 DayFourteen dayFourteen = new DayFourteen(puzzleNumber);
+            } else if (day.equals("15")) {
+                DayFifteen dayFifteen = new DayFifteen(puzzleNumber);
             }
         }
 
