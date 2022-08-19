@@ -29,7 +29,7 @@ public class DayFifteen {
             SearchNode node = new SearchNode();
             node.parent = parent;
             node.name = currentName;
-            node.pathCost = cost;
+            node.pathCost = cost + parent.pathCost;
             return node;
         }
 
@@ -58,9 +58,11 @@ public class DayFifteen {
     }
 
     static Map<String, Map<String, Integer>> graph = new HashMap<>();
+    // MAP<StateName, Map<Successor name, cost>>
     int vertexCount;
     int maxI;
     int maxJ;
+    int startCost;
 
     private void addVertex(String vertex) {
         graph.put(vertex, new HashMap<>());
@@ -78,15 +80,12 @@ public class DayFifteen {
     }
 
     private void printGraph() {
-        System.out.println("Graph");
         List<String> vertexList = new ArrayList<>();
         for (String vertex : graph.keySet()) {
             vertexList.add(vertex);
         }
         Collections.sort(vertexList);
-        for (String vertex : vertexList) {
-            System.out.println(vertex +  ", " + graph.get(vertex).keySet() + ", " + graph.get(vertex).entrySet());
-        }
+
     }
 
     private ArrayList<SearchNode> BestFirstSearch(String startNode, String endNode) {
@@ -97,8 +96,12 @@ public class DayFifteen {
             SearchNode n = open.poll();
             String currentNode = n.name;
             int currentCost = n.pathCost;
-            if (!distances.containsKey(currentNode) || currentCost < distances.get(currentCost)) {
-                distances.replace(currentNode, currentCost);
+            if (!distances.containsKey(currentNode) || currentCost < distances.get(currentNode)) {
+                if (!distances.containsKey(currentNode)) {
+                    distances.put(currentNode, currentCost);
+                } else {
+                    distances.replace(currentNode, currentCost);
+                }
                 if (n.name.equals(endNode)) {
                     return SearchNode.extractPath(n);
                 }
@@ -132,14 +135,15 @@ public class DayFifteen {
     private void Puzzle() {
         printGraph();
         String start = maxI + String.valueOf(maxJ);
-        System.out.println("startState = " + start);
         ArrayList<SearchNode> solution = BestFirstSearch(start, "00");
         int sum = 0;
         for (SearchNode s : solution) {
+            if (sum < s.pathCost) {
+                sum = s.pathCost;
+            }
             System.out.println("node: " + s.name + ", cost: " + s.pathCost);
-            sum += s.pathCost;
         }
-        System.out.println("pathCost = " + sum);
+        System.out.println("pathCost = " + (sum - startCost));
     }
 
     private void readInput() {
@@ -208,9 +212,9 @@ public class DayFifteen {
                 }
             }
         }
+        startCost = array[0][0];
         maxI = array.length - 1;
         maxJ = array[0].length - 1;
-        System.out.println("maxI = " + maxI + ", maxJ = " + maxJ);
     }
 
 
