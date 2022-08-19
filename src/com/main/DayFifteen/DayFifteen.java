@@ -7,7 +7,57 @@ public class DayFifteen {
 
     // TODO: implement dijkstra
 
-    Map<String, Map<String, Integer>> graph = new HashMap<>();
+    private static class SearchNode implements Comparable<SearchNode> {
+
+
+        String name;
+        int pathCost;
+        SearchNode parent;
+
+        public static SearchNode makeRootNode(String currentName) {
+            SearchNode node = new SearchNode();
+            node.name = currentName;
+            node.pathCost = 0;
+            node.parent = null;
+            return node;
+        }
+
+
+
+
+        public static SearchNode makeNode(String currentName, SearchNode parent, int cost) {
+            SearchNode node = new SearchNode();
+            node.parent = parent;
+            node.name = currentName;
+            node.pathCost = cost;
+            return node;
+        }
+
+        public static ArrayList<SearchNode> extractPath(SearchNode node) {
+            ArrayList<SearchNode> path = new ArrayList<>();
+            while (node.parent != null) {
+                path.add(node);
+                node = node.parent;
+            }
+            Collections.reverse(path);
+            return path;
+        }
+
+
+        @Override
+        public int compareTo(SearchNode o) {
+            int x1 = Integer.parseInt(this.name);
+            int x2 = Integer.parseInt(o.name);
+            if (x1 < x2) {
+                return 1;
+            } else if (x1 > x2) {
+                return -1;
+            }
+            return 0;
+        }
+    }
+
+    static Map<String, Map<String, Integer>> graph = new HashMap<>();
     int vertexCount;
     int maxI;
     int maxJ;
@@ -39,13 +89,33 @@ public class DayFifteen {
         }
     }
 
-    private void dijkstra() {
-        String start =
+    private ArrayList<SearchNode> BestFirstSearch(String startNode, String endNode) {
+        PriorityQueue<SearchNode> open = new PriorityQueue<>();
+        open.add(SearchNode.makeRootNode(startNode));
+        HashMap<String, Integer> distances = new HashMap<>();
+        while (!open.isEmpty()) {
+            SearchNode n = open.poll();
+            String currentNode = n.name;
+            int currentCost = n.pathCost;
+            if (!distances.containsKey(currentNode) || currentCost < distances.get(currentCost)) {
+                distances.replace(currentNode, currentCost);
+                if (n.name.equals(endNode)) {
+                    return SearchNode.extractPath(n);
+                }
+                Set<String> successors = graph.get(currentNode).keySet();
+                for (String s : successors) {
+                    if (graph.get(currentNode).get(s) < Integer.MAX_VALUE) {
+                        SearchNode nTemp = SearchNode.makeNode(s, n, graph.get(currentNode).get(s));
+                        open.add(nTemp);
+                    }
+                }
+            }
+        }
+        System.out.println("unsolvable");
+        return null;
     }
 
-    private int minDistance(int[] distance, boolean[] shortestPathSet) {
-        return 0;
-    }
+
 
 
     public DayFifteen(String puzzleNumber) {
@@ -61,6 +131,15 @@ public class DayFifteen {
 
     private void Puzzle() {
         printGraph();
+        String start = maxI + String.valueOf(maxJ);
+        System.out.println("startState = " + start);
+        ArrayList<SearchNode> solution = BestFirstSearch(start, "00");
+        int sum = 0;
+        for (SearchNode s : solution) {
+            System.out.println("node: " + s.name + ", cost: " + s.pathCost);
+            sum += s.pathCost;
+        }
+        System.out.println("pathCost = " + sum);
     }
 
     private void readInput() {
@@ -68,7 +147,7 @@ public class DayFifteen {
         String os = System.getProperty("os.name");
         File file = null;
         if (os.equals("Mac OS X")) {
-            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_15_test1.txt");
+            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_15_test.txt");
         } else if (os.equals("Windows 10")) {
             file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_15.txt");
         } else {
@@ -129,7 +208,10 @@ public class DayFifteen {
                 }
             }
         }
-        maxI = array.length;
-        maxJ = array[0].length;
+        maxI = array.length - 1;
+        maxJ = array[0].length - 1;
+        System.out.println("maxI = " + maxI + ", maxJ = " + maxJ);
     }
+
+
 }
