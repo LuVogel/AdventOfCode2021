@@ -88,6 +88,30 @@ public class DayFifteen {
 
     }
 
+    private ArrayList<SearchNode> UniformCostSearch(String startNode, String endNode) {
+        PriorityQueue<SearchNode> open = new PriorityQueue<>();
+        open.add(SearchNode.makeRootNode(startNode));
+        HashMap<String, Integer> closed = new HashMap<>();
+        while (!open.isEmpty()) {
+            SearchNode n = open.poll();
+            String currentNode = n.name;
+            int currentCost = n.pathCost;
+            if (!closed.containsKey(currentNode)) {
+                closed.put(currentNode, currentCost);
+                if (currentNode.equals(endNode)) {
+                    return SearchNode.extractPath(n);
+                }
+                Set<String> successors = graph.get(currentNode).keySet();
+                for (String s : successors) {
+                    SearchNode nTemp = SearchNode.makeNode(s, n, graph.get(currentNode).get(s));
+                    open.add(nTemp);
+                }
+            }
+        }
+        System.out.println("unsolvable");
+        return null;
+    }
+
     private ArrayList<SearchNode> BestFirstSearch(String startNode, String endNode) {
         PriorityQueue<SearchNode> open = new PriorityQueue<>();
         open.add(SearchNode.makeRootNode(startNode));
@@ -102,7 +126,7 @@ public class DayFifteen {
                 } else {
                     distances.replace(currentNode, currentCost);
                 }
-                if (n.name.equals(endNode)) {
+                if (currentNode.equals(endNode)) {
                     return SearchNode.extractPath(n);
                 }
                 Set<String> successors = graph.get(currentNode).keySet();
@@ -134,6 +158,9 @@ public class DayFifteen {
 
     private void Puzzle() {
         printGraph();
+        for (String s : graph.keySet()) {
+            System.out.println("node: " + s + ", succ: " + graph.get(s).keySet());
+        }
         String start = maxI + String.valueOf(maxJ);
         ArrayList<SearchNode> solution = BestFirstSearch(start, "00");
         int sum = 0;
@@ -141,7 +168,6 @@ public class DayFifteen {
             if (sum < s.pathCost) {
                 sum = s.pathCost;
             }
-            System.out.println("node: " + s.name + ", cost: " + s.pathCost);
         }
         System.out.println("pathCost = " + (sum - startCost));
     }
@@ -188,27 +214,77 @@ public class DayFifteen {
         }
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
-                int tmpI;
-                int tmpJ;
+                int tmpIUp = i -1;
+                int tmpIDown = i + 1;
+                int tmpJLeft = j - 1;
+                int tmpJRight = j + 1;
 
-                if (i < array.length-1 && j < array[0].length-1) {
-                    //not  right or down borders
-                    tmpI = i + 1;
-                    tmpJ = j + 1;
+                if (i < array.length-1 && j < array[0].length-1 && i > 0 && j > 0) {
+                    //no border
                     addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJ), array[i][j] );
+                            i + String.valueOf(tmpJRight), array[i][j] );
                     addEdge(i + String.valueOf(j),
-                            tmpI + String.valueOf(j), array[i][j] );
-                } else if (i == array.length-1 && j < array[0].length-1){
-                    //down border
-                    tmpJ = j + 1;
+                            tmpIDown + String.valueOf(j), array[i][j] );
                     addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJ), array[i][j]);
-                } else if (i < array.length-1 && j == array[0].length-1) {
-                    //right border
-                    tmpI = i + 1;
+                            tmpIUp + String.valueOf(j), array[i][j] );
                     addEdge(i + String.valueOf(j),
-                            tmpI + String.valueOf(j), array[i][j]);
+                            i + String.valueOf(tmpJLeft), array[i][j] );
+                } else if (i == array.length-1 && j < array[0].length-1 && j > 0){
+                    //down border (no corners)
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJRight), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJLeft), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            tmpIUp + String.valueOf(j), array[i][j]);
+                } else if (i < array.length-1 && j == array[0].length-1 && i > 0) {
+                    //right border (no corners)
+                    addEdge(i + String.valueOf(j),
+                            tmpIUp + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            tmpIDown + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJLeft), array[i][j]);
+                } else if (i < array.length - 1 && i > 0 && j == 0) {
+                    //left border (no corners)
+                    addEdge(i + String.valueOf(j),
+                            tmpIUp + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            tmpIDown + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJRight), array[i][j]);
+                } else if (i == 0 && j < array[0].length - 1 && j > 0) {
+                    //top border (no corners)
+                    addEdge(i + String.valueOf(j),
+                            tmpIDown + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJLeft), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJRight), array[i][j]);
+                } else if (i == 0 && j == 0) {
+                    //topLeft corner
+                    addEdge(i + String.valueOf(j),
+                            tmpIDown + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJRight), array[i][j]);
+                } else if (i == array.length - 1 && j == 0) {
+                    //downLeftCorner
+                    addEdge(i + String.valueOf(j),
+                            tmpIUp + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJRight), array[i][j]);
+                } else if (i == array.length - 1 && j == array[0].length - 1) {
+                    //downRightCorner
+                    addEdge(i + String.valueOf(j),
+                            tmpIUp + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJLeft), array[i][j]);
+                } else if (i == 0 && j == array[0].length - 1) {
+                    //topRightCorner
+                    addEdge(i + String.valueOf(j),
+                            tmpIDown + String.valueOf(j), array[i][j]);
+                    addEdge(i + String.valueOf(j),
+                            i + String.valueOf(tmpJLeft), array[i][j]);
                 }
             }
         }
