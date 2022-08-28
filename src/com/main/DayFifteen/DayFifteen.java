@@ -1,179 +1,119 @@
 package com.main.DayFifteen;
 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class DayFifteen {
 
-    // TODO: implement dijkstra
+    public int[][] globalMap;
+    public Graph cGraph;
+    public int startCost;
+    public int maxI;
+    public int maxJ;
 
-    private static class SearchNode implements Comparable<SearchNode> {
+    public static class Graph {
 
+        private Map<String, List<String>> customGraph;
 
-        String name;
-        int pathCost;
-        SearchNode parent;
-
-        public static SearchNode makeRootNode(String currentName) {
-            SearchNode node = new SearchNode();
-            node.name = currentName;
-            node.pathCost = 0;
-            node.parent = null;
-            return node;
+        public Graph() {
+            this.customGraph = new HashMap<>();
         }
 
-
-
-
-        public static SearchNode makeNode(String currentName, SearchNode parent, int cost) {
-            SearchNode node = new SearchNode();
-            node.parent = parent;
-            node.name = currentName;
-            node.pathCost = cost + parent.pathCost;
-            return node;
+        public void addVertex(String s) {
+            customGraph.put(s, new LinkedList<>());
         }
 
-        public static ArrayList<SearchNode> extractPath(SearchNode node) {
-            ArrayList<SearchNode> path = new ArrayList<>();
-            while (node.parent != null) {
-                path.add(node);
-                node = node.parent;
+        public void addEdge(String source, String destination, boolean bidirectional) {
+            if (!customGraph.containsKey(source)) {
+                addVertex(source);
             }
-            Collections.reverse(path);
-            return path;
-        }
-
-
-        @Override
-        public int compareTo(SearchNode o) {
-            int x1 = Integer.parseInt(this.name);
-            int x2 = Integer.parseInt(o.name);
-            if (x1 < x2) {
-                return 1;
-            } else if (x1 > x2) {
-                return -1;
+            if (!customGraph.containsKey(destination)) {
+                addVertex(destination);
             }
-            return 0;
-        }
-    }
-
-    static Map<String, Map<String, Integer>> graph = new HashMap<>();
-    // MAP<StateName, Map<Successor name, cost>>
-    int vertexCount;
-    int maxI;
-    int maxJ;
-    int startCost;
-
-    private void addVertex(String vertex) {
-        graph.put(vertex, new HashMap<>());
-        vertexCount++;
-    }
-
-    private void addEdge(String source, String destination, int cost) {
-        if (!graph.containsKey(source)) {
-            addVertex(source);
-        }
-        if (!graph.containsKey(destination)) {
-            addVertex(destination);
-        }
-        graph.get(destination).put(source, cost);
-    }
-
-    private void printGraph() {
-        List<String> vertexList = new ArrayList<>();
-        for (String vertex : graph.keySet()) {
-            vertexList.add(vertex);
-        }
-        Collections.sort(vertexList);
-
-    }
-
-    private ArrayList<SearchNode> UniformCostSearch(String startNode, String endNode) {
-        PriorityQueue<SearchNode> open = new PriorityQueue<>();
-        open.add(SearchNode.makeRootNode(startNode));
-        HashMap<String, Integer> closed = new HashMap<>();
-        while (!open.isEmpty()) {
-            SearchNode n = open.poll();
-            String currentNode = n.name;
-            int currentCost = n.pathCost;
-            if (!closed.containsKey(currentNode)) {
-                closed.put(currentNode, currentCost);
-                if (currentNode.equals(endNode)) {
-                    return SearchNode.extractPath(n);
-                }
-                Set<String> successors = graph.get(currentNode).keySet();
-                for (String s : successors) {
-                    SearchNode nTemp = SearchNode.makeNode(s, n, graph.get(currentNode).get(s));
-                    open.add(nTemp);
-                }
+            customGraph.get(source).add(destination);
+            if (bidirectional) {
+                customGraph.get(destination).add(source);
             }
         }
-        System.out.println("unsolvable");
-        return null;
-    }
-
-    private ArrayList<SearchNode> BestFirstSearch(String startNode, String endNode) {
-        PriorityQueue<SearchNode> open = new PriorityQueue<>();
-        open.add(SearchNode.makeRootNode(startNode));
-        HashMap<String, Integer> distances = new HashMap<>();
-        while (!open.isEmpty()) {
-            SearchNode n = open.poll();
-            String currentNode = n.name;
-            int currentCost = n.pathCost;
-            if (!distances.containsKey(currentNode) || currentCost < distances.get(currentNode)) {
-                if (!distances.containsKey(currentNode)) {
-                    distances.put(currentNode, currentCost);
-                } else {
-                    distances.replace(currentNode, currentCost);
-                }
-                if (currentNode.equals(endNode)) {
-                    return SearchNode.extractPath(n);
-                }
-                Set<String> successors = graph.get(currentNode).keySet();
-                for (String s : successors) {
-                    if (graph.get(currentNode).get(s) < Integer.MAX_VALUE) {
-                        SearchNode nTemp = SearchNode.makeNode(s, n, graph.get(currentNode).get(s));
-                        open.add(nTemp);
-                    }
-                }
-            }
+        public Map<String, List<String>> getCustomGraph() {
+            return customGraph;
         }
-        System.out.println("unsolvable");
-        return null;
+
+        public int getVertexCount() {
+            return customGraph.keySet().size();
+        }
     }
-
-
 
 
     public DayFifteen(String puzzleNumber) {
-        readInput();
         if (puzzleNumber.equals("1")) {
-            Puzzle();
             System.out.println("Solution Day15, Part 1 :");
+            Puzzle(1);
         } else if (puzzleNumber.equals("2")) {
-            Puzzle();
             System.out.println("Solution Day15, Part 2: ");
+            Puzzle(2);
+
         }
     }
 
-    private void Puzzle() {
-        printGraph();
-        for (String s : graph.keySet()) {
-            System.out.println("node: " + s + ", succ: " + graph.get(s).keySet());
+    private void Puzzle(int part) {
+        cGraph = new Graph();
+        if (part == 1 ) {
+            readInput1();
+        } else if (part == 2) {
+            readInput2();
         }
-        String start = maxI + String.valueOf(maxJ);
-        ArrayList<SearchNode> solution = BestFirstSearch(start, "00");
-        int sum = 0;
-        for (SearchNode s : solution) {
-            if (sum < s.pathCost) {
-                sum = s.pathCost;
+
+        HashMap<String, Integer> solution = dijkstra(cGraph, "0,0");
+        String endNode = maxI + "," + maxJ;
+        System.out.println("cost from start to end: " + solution.get(endNode));
+    }
+
+    private HashMap<String, Integer > dijkstra(Graph graph, String startNode) {
+        HashMap<String, Integer> unvisited = new HashMap<>();
+        HashMap<String, Integer> visited = new HashMap<>();
+        for (String key : graph.customGraph.keySet()) {
+            unvisited.put(key, Integer.MAX_VALUE);
+        }
+        unvisited.put(startNode, 0);
+        while (true) {
+            if (unvisited.size() == 0) {
+                break;
+            } else {
+                int small = Integer.MAX_VALUE;
+                String currentNode = "";
+                for (String tempKey : unvisited.keySet()) {
+                    if (unvisited.get(tempKey) < small) {
+                        small = unvisited.get(tempKey);
+                        currentNode = tempKey;
+                    }
+                }
+
+                for (String keys : graph.customGraph.keySet()) {
+                    if (currentNode.equals(keys)) {
+                        for (String neighbour : graph.customGraph.get(keys)) {
+                            if (!visited.containsKey(neighbour)) {
+                                int cost = unvisited.get(currentNode) +
+                                        globalMap[Integer.parseInt(neighbour.split(",")[0])]
+                                                [Integer.parseInt(neighbour.split(",")[1])];
+                                if (cost < unvisited.get(neighbour)) {
+                                    unvisited.put(neighbour, cost);
+
+                                }
+                            }
+                        }
+                    }
+                }
+                visited.put(currentNode, unvisited.get(currentNode));
+                unvisited.remove(currentNode);
             }
         }
-        System.out.println("pathCost = " + (sum - startCost));
+        return visited;
     }
 
-    private void readInput() {
-        vertexCount = 0;
+    private void readInput1() {
         String os = System.getProperty("os.name");
         File file = null;
         if (os.equals("Mac OS X")) {
@@ -205,93 +145,190 @@ public class DayFifteen {
 
         }
         String[] sArray = map.split(",");
-        int[][] array = new int[sArray.length][lineLength];
-        for (int i = 0; i < array.length; i++) {
+
+        globalMap = new int[sArray.length][lineLength];
+        maxI = globalMap.length-1;
+        maxJ = globalMap[0].length-1;
+
+        for (int i = 0; i <= maxI; i++) {
             String[] tmp = sArray[i].split("");
-            for (int j = 0; j < array[0].length; j++) {
-                array[i][j] = Integer.parseInt(tmp[j]);
-            }
-        }
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[0].length; j++) {
+            for (int j = 0; j <= maxJ; j++) {
+                globalMap[i][j] = Integer.parseInt(tmp[j]);
                 int tmpIUp = i -1;
                 int tmpIDown = i + 1;
                 int tmpJLeft = j - 1;
                 int tmpJRight = j + 1;
-
-                if (i < array.length-1 && j < array[0].length-1 && i > 0 && j > 0) {
+                if (i < maxI && j < maxJ && i > 0 && j > 0) {
                     //no border
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j] );
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j] );
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j] );
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j] );
-                } else if (i == array.length-1 && j < array[0].length-1 && j > 0){
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i == maxI && j < maxJ && j > 0){
                     //down border (no corners)
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j]);
-                } else if (i < array.length-1 && j == array[0].length-1 && i > 0) {
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                } else if (i < maxI && j == maxJ && i > 0) {
                     //right border (no corners)
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j]);
-                } else if (i < array.length - 1 && i > 0 && j == 0) {
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i < maxI && i > 0 && j == 0) {
                     //left border (no corners)
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j]);
-                } else if (i == 0 && j < array[0].length - 1 && j > 0) {
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == 0 && j < maxJ && j > 0) {
                     //top border (no corners)
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j]);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
                 } else if (i == 0 && j == 0) {
                     //topLeft corner
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j]);
-                } else if (i == array.length - 1 && j == 0) {
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == maxI && j == 0) {
                     //downLeftCorner
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJRight), array[i][j]);
-                } else if (i == array.length - 1 && j == array[0].length - 1) {
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == maxI && j == maxJ) {
                     //downRightCorner
-                    addEdge(i + String.valueOf(j),
-                            tmpIUp + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j]);
-                } else if (i == 0 && j == array[0].length - 1) {
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i == 0 && j == maxJ) {
                     //topRightCorner
-                    addEdge(i + String.valueOf(j),
-                            tmpIDown + String.valueOf(j), array[i][j]);
-                    addEdge(i + String.valueOf(j),
-                            i + String.valueOf(tmpJLeft), array[i][j]);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
                 }
             }
         }
-        startCost = array[0][0];
-        maxI = array.length - 1;
-        maxJ = array[0].length - 1;
+
     }
 
+    private void readInput2() {
+        String os = System.getProperty("os.name");
+        File file = null;
+        if (os.equals("Mac OS X")) {
+            file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_15_test.txt");
+        } else if (os.equals("Windows 10")) {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_15_test.txt");
+        } else {
+            System.out.println("OS not detected");
+            System.exit((-1));
+        }
 
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String map = "";
+        String line = "";
+        int lineLength = 0;
+        while (true) {
+            try {
+                if (!((line = reader.readLine()) != null)) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            map += line + ",";
+            lineLength = line.length();
+
+        }
+        String[] sArray = map.split(",");
+
+        globalMap = new int[5 * sArray.length][5 * lineLength];
+        maxI = sArray.length;
+        maxJ = lineLength;
+        for (int i = 0; i < maxI; i++) {
+            String[] tmp = sArray[i].split("");
+            for (int j = 0; j < maxJ; j++) {
+
+                for (int x = 0; x < globalMap.length-1; x+= sArray.length) {
+                    int counter = 0;
+                    for (int y = 0; y < globalMap[0].length-1; y += sArray.length) {
+                        int tempCountAddCost = counter + Integer.parseInt(tmp[j]);
+                        if (tempCountAddCost > 9) {
+                            tempCountAddCost -= 9;
+                        }
+                        int tempCountAddBothK = tempCountAddCost + counter;
+                        if (tempCountAddBothK > 9 ) {
+                            tempCountAddBothK -= 9;
+                        }
+                        System.out.println("added: " + (x+i) + ", " + j + " with cost: " + tempCountAddCost);
+                        System.out.println("added: " + (x+i) + ", " + (y+j) + " with cost: " + tempCountAddBothK);
+                        System.out.println("added: " + i + ", " + (y+j) + " with cost: " + tempCountAddCost);
+                        globalMap[x + i][j] = tempCountAddCost;
+                        globalMap[i][y + j] = tempCountAddCost;
+                        globalMap[x + i][y + j] = tempCountAddBothK;
+                        counter++;
+                    }
+
+                }
+            }
+        }
+        System.out.println("----------------------------------");
+        for (int i = 0; i < globalMap.length; i++) {
+            for (int j = 0; j < globalMap[0].length; j++) {
+                if (globalMap[i][j] == 0) {
+                    System.out.println("zero cost value at: " + i + "," + j);
+                }
+            }
+        }
+        maxI = globalMap.length-1;
+        maxJ = globalMap[0].length-1;
+        for (int i = 0; i <= maxI; i++) {
+            for (int j = 0; j <= maxJ; j++) {
+                int tmpIUp = i -1;
+                int tmpIDown = i + 1;
+                int tmpJLeft = j - 1;
+                int tmpJRight = j + 1;
+                if (i < maxI && j < maxJ && i > 0 && j > 0) {
+                    //no border
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i == maxI && j < maxJ && j > 0){
+                    //down border (no corners)
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                } else if (i < maxI && j == maxJ && i > 0) {
+                    //right border (no corners)
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i < maxI && i > 0 && j == 0) {
+                    //left border (no corners)
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == 0 && j < maxJ && j > 0) {
+                    //top border (no corners)
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == 0 && j == 0) {
+                    //topLeft corner
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == maxI && j == 0) {
+                    //downLeftCorner
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJRight, false);
+                } else if (i == maxI && j == maxJ) {
+                    //downRightCorner
+                    cGraph.addEdge(i + "," + j, tmpIUp + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                } else if (i == 0 && j == maxJ) {
+                    //topRightCorner
+                    cGraph.addEdge(i + "," + j, tmpIDown + "," + j, false);
+                    cGraph.addEdge(i + "," + j, i + "," + tmpJLeft, false);
+                }
+            }
+        }
+    }
 }
