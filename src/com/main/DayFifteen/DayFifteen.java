@@ -13,6 +13,7 @@ public class DayFifteen {
     public int maxI;
     public int maxJ;
 
+
     public static class Graph {
 
         private Map<String, List<String>> customGraph;
@@ -58,6 +59,10 @@ public class DayFifteen {
         }
     }
 
+    /**
+     * RUNTIME DIJKSTRA: approx: 2h5m
+     * @param part
+     */
     private void Puzzle(int part) {
         cGraph = new Graph();
         if (part == 1 ) {
@@ -65,11 +70,15 @@ public class DayFifteen {
         } else if (part == 2) {
             readInput2();
         }
-
+        long startTime = System.nanoTime();
         HashMap<String, Integer> solution = dijkstra(cGraph, "0,0");
+        long endTime = System.nanoTime();
+        System.out.println("duration dijkstra in ns: " + (endTime - startTime));
         String endNode = maxI + "," + maxJ;
         System.out.println("cost from start to end: " + solution.get(endNode));
     }
+
+
 
     private HashMap<String, Integer > dijkstra(Graph graph, String startNode) {
         HashMap<String, Integer> unvisited = new HashMap<>();
@@ -212,7 +221,7 @@ public class DayFifteen {
         if (os.equals("Mac OS X")) {
             file = new File("/Users/lukasvogel/git/adventOfCode/AdventOfCode2021/input_files/input_day_15_test.txt");
         } else if (os.equals("Windows 10")) {
-            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_15_test.txt");
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_15.txt");
         } else {
             System.out.println("OS not detected");
             System.exit((-1));
@@ -242,27 +251,20 @@ public class DayFifteen {
         globalMap = new int[5 * sArray.length][5 * lineLength];
         maxI = sArray.length;
         maxJ = lineLength;
+
         for (int i = 0; i < maxI; i++) {
             String[] tmp = sArray[i].split("");
             for (int j = 0; j < maxJ; j++) {
-
-                for (int x = 0; x < globalMap.length-1; x+= sArray.length) {
-                    int counter = 0;
-                    for (int y = 0; y < globalMap[0].length-1; y += sArray.length) {
+                int counterReset = -1;
+                for (int x = i; x < globalMap.length; x+= sArray.length) {
+                    counterReset++;
+                    int counter = counterReset;
+                    for (int y = j; y < globalMap[0].length; y += sArray.length) {
                         int tempCountAddCost = counter + Integer.parseInt(tmp[j]);
                         if (tempCountAddCost > 9) {
                             tempCountAddCost -= 9;
                         }
-                        int tempCountAddBothK = tempCountAddCost + counter;
-                        if (tempCountAddBothK > 9 ) {
-                            tempCountAddBothK -= 9;
-                        }
-                        System.out.println("added: " + (x+i) + ", " + j + " with cost: " + tempCountAddCost);
-                        System.out.println("added: " + (x+i) + ", " + (y+j) + " with cost: " + tempCountAddBothK);
-                        System.out.println("added: " + i + ", " + (y+j) + " with cost: " + tempCountAddCost);
-                        globalMap[x + i][j] = tempCountAddCost;
-                        globalMap[i][y + j] = tempCountAddCost;
-                        globalMap[x + i][y + j] = tempCountAddBothK;
+                        globalMap[x][y] = tempCountAddCost;
                         counter++;
                     }
 
@@ -277,6 +279,8 @@ public class DayFifteen {
                 }
             }
         }
+        long numbOfVertices = globalMap.length * globalMap[0].length;
+        System.out.println("number of vertices (V): " + numbOfVertices + " and finding path in O(V)");
         maxI = globalMap.length-1;
         maxJ = globalMap[0].length-1;
         for (int i = 0; i <= maxI; i++) {
