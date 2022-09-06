@@ -17,6 +17,7 @@ public class Main {
 
     static String day;
     static String puzzleNumber;
+    static boolean testCase;
 
     public static void main(String[] args) throws IOException, URISyntaxException {
 
@@ -29,9 +30,14 @@ public class Main {
                 break;
             } else {
                 String[] puzzleArray = userInput.split(",");
-                if (puzzleArray.length == 2) {
+                if (puzzleArray.length >= 2) {
                     day = puzzleArray[0];
                     puzzleNumber = puzzleArray[1];
+                }
+                if (puzzleArray.length == 3) {
+                    testCase = true;
+                } else {
+                    testCase = false;
                 }
             }
             if (day.equals("13")) {
@@ -41,7 +47,7 @@ public class Main {
             }*/ else if (day.equals("15")) {
                 DayFifteen dayFifteen = new DayFifteen(puzzleNumber);
             } else if (day.equals("16")) {
-                DaySixteen daySixteen = new DaySixteen(puzzleNumber);
+                DaySixteen daySixteen = new DaySixteen(puzzleNumber, testCase);
             }
         }
 
