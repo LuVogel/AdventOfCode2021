@@ -4,26 +4,52 @@ import java.io.*;
 import java.util.ArrayList;
 
 
+
 public class DaySixteen {
 
+    //Part 2 inspired by Solution of Reddit User Natrium_Benzoat
 
-    //TODO: handle literal value right..
 
     boolean testCase;
     ArrayList<String> binaryList;
     ArrayList<String> partTwoList;
-    ArrayList<String> operators;
+    int counter = 0;
 
-    private class NumberPacket {
-        String number;
-        boolean isBinary;
+    protected class Node {
+        final long packetVersion;
+        final long packetID;
+        long literalValue;
+        final ArrayList<Node> childs = new ArrayList<>();
 
-        public NumberPacket(String number, boolean isBinary) {
-            this.number = number;
-            this.isBinary = isBinary;
+        public Node(long packetVersion, long packetID) {
+            this.packetVersion = packetVersion;
+            this.packetID = packetID;
+        }
+
+        public long getPacketID() {
+            return packetID;
+        }
+
+        public ArrayList<Node> getChilds() {
+            return childs;
+        }
+
+        public long getPacketVersion() {
+            return packetVersion;
+        }
+
+        public long getLiteralValue() {
+            return literalValue;
+        }
+
+        public void setLiteralValue(long literalValue) {
+            this.literalValue = literalValue;
+        }
+
+        public void addChild(Node child) {
+            childs.add(child);
         }
     }
-
 
     public DaySixteen(String puzzleNumber, boolean testCase) {
         this.testCase = testCase;
@@ -40,217 +66,222 @@ public class DaySixteen {
     private void Puzzle(int part) {
         readInput();
         System.out.println();
-        int sum = binaryToLabels(binaryList);
+        partTwoList = new ArrayList<>();
+        partTwoList.addAll(binaryList);
+        long sum = getVersionSum(binaryList);
         System.out.println("version sum: " + sum);
         if (part == 2) {
-            operators = new ArrayList<>();
-            operators.add("+");
-            operators.add("*");
-            operators.add("min");
-            operators.add("max");
-            operators.add("g");
-            operators.add("l");
-            operators.add("e");
+            Node firstNode = validatePacket();
+            calculateLiteralValues(firstNode);
+            long val = firstNode.getLiteralValue();
             System.out.println("------------------");
-            for (String s : partTwoList) {
-                System.out.println(s);
-            }
-            ArrayList<String> transmissionList = getListForTransmission();
-
-            System.out.println("------------------");
-            /*for (String s : transmissionList) {
-                System.out.println(s);
-            }*/
-            System.out.println("------------------");
-            int transmissionValue = getTransmissionValue(transmissionList);
-            System.out.println("transmission value: " + transmissionValue + "\n");
-
+            System.out.println("value of outermost packet is " + val);
         }
 
     }
 
-    private int getTransmissionValue(ArrayList<String> transmissionList) {
-        ArrayList<NumberPacket> helper = new ArrayList<>();
-        ArrayList<NumberPacket> helper1 = new ArrayList<>();
-        int transVal = 0;
-        while (!transmissionList.isEmpty()) {
-            String current = transmissionList.remove(0);
-            if (!operators.contains(current)) {
-                helper.add(new NumberPacket(current, true));
-            } else {
-                if (helper.isEmpty()) {
-                    helper = (ArrayList<NumberPacket>) helper1.clone();
-                    helper1.clear();
-                }
-                if (current.equals("*")) {
-                    transVal = 1;
-                    while (!helper.isEmpty()) {
-                        NumberPacket n = helper.remove(0);
-                        if (n.isBinary) {
-                            transVal *= binaryToDecimal(n.number);
-                        } else {
-                            transVal *= Integer.parseInt(n.number);
-                        }
 
-                    }
-                } else if (current.equals("+")) {
-                    transVal = 0;
-                    while (!helper.isEmpty()) {
-                        NumberPacket n = helper.remove(0);
-                        if (n.isBinary) {
-                            transVal += binaryToDecimal(n.number);
-                        } else {
-                            transVal += Integer.parseInt(n.number);
-                        }
-                    }
-                } else if (current.equals("e")) {
-                    NumberPacket n = helper.remove(0);
-                    NumberPacket n1 = helper.remove(0);
-                    if  (n.number.equals(n1.number)) {
-                        transVal = 1;
-                    } else {
-                        transVal = 0;
-                    }
-                } else if (current.equals("l")) {
-                    NumberPacket n = helper.remove(0);
-                    NumberPacket n1 = helper.remove(0);
-                    int t1;
-                    int t2;
-                    if (n.isBinary) {
-                        t1 = Integer.parseInt(n.number);
-                    } else {
-                        t1 = binaryToDecimal(n.number);
-                    }
-                    if (n1.isBinary) {
-                        t2 = Integer.parseInt(n1.number);
-                    } else {
-                        t2 = binaryToDecimal(n1.number);
-                    }
-                    if (t1 < t2) {
-                        transVal = 1;
-                    } else {
-                        transVal = 0;
-                    }
-                } else if (current.equals("g")) {
-                    NumberPacket n = helper.remove(0);
-                    NumberPacket n1 = helper.remove(0);
-                    int t1;
-                    int t2;
-                    if (n.isBinary) {
-                        t1 = Integer.parseInt(n.number);
-                    } else {
-                        t1 = binaryToDecimal(n.number);
-                    }
-                    if (n1.isBinary) {
-                        t2 = Integer.parseInt(n1.number);
-                    } else {
-                        t2 = binaryToDecimal(n1.number);
-                    }
-                    if (t1 > t2) {
-                        transVal = 1;
-                    } else {
-                        transVal = 0;
-                    }
-                } else if (current.equals("min")) {
-                    transVal = Integer.MAX_VALUE;
-                    while (!helper.isEmpty()) {
-                        NumberPacket n = helper.remove(0);
-                        int tmp;
-                        if (n.isBinary) {
-                            tmp = binaryToDecimal(n.number);
-                        } else {
-                            tmp = Integer.parseInt(n.number);
-                        }
-                        if (tmp < transVal) {
-                            transVal = tmp;
-                        }
-                    }
-                } else if (current.equals("max")) {
-                    transVal = Integer.MIN_VALUE;
-                    while (!helper.isEmpty()) {
-                        NumberPacket n = helper.remove(0);
-                        int tmp;
-                        if (n.isBinary) {
-                            tmp = binaryToDecimal(n.number);
-                        } else {
-                            tmp = Integer.parseInt(n.number);
-                        }
-                        if (tmp > transVal) {
-                            transVal = tmp;
-                        }
-                    }
-                }
-                System.out.println("added val: " + transVal);
-                helper1.add(new NumberPacket(String.valueOf(transVal), false));
+    private long calculateLiteralValues(Node node) {
+        int currentID = (int) node.getPacketID();
+        if (currentID == 0) {
+            return calculateSum(node);
+        } else if (currentID == 1) {
+            return calculateProd(node);
+        } else if (currentID ==2) {
+            return calculateMin(node);
+        } else if (currentID == 3) {
+            return calculateMax(node);
+        } else if (currentID == 4) {
+            return node.getLiteralValue();
+        } else if (currentID == 5) {
+            return calculateGreater(node);
+        } else if (currentID == 6) {
+            return calculateLess(node);
+        } else if (currentID == 7) {
+            return calculateEqual(node);
+        } else {
+            return 0;
+        }
+    }
 
+    private long calculateSum(Node node) {
+        long sum = 0L;
+        for (Node p: node.getChilds()) {
+            sum += calculateLiteralValues(p);
+        }
+        node.setLiteralValue(sum);
+        return sum;
+    }
+
+    private long calculateEqual(Node node) {
+        long first = calculateLiteralValues(node.getChilds().get(0));
+        long second = calculateLiteralValues(node.getChilds().get(1));
+        if (first == second) {
+            node.setLiteralValue(1);
+            return 1;
+        } else {
+            node.setLiteralValue(0);
+            return 0;
+        }
+    }
+
+    private long calculateLess(Node node) {
+        long first = calculateLiteralValues(node.getChilds().get(0));
+        long second = calculateLiteralValues(node.getChilds().get(1));
+        if (first < second) {
+            node.setLiteralValue(1);
+            return 1;
+        } else {
+            node.setLiteralValue(0);
+            return 0;
+        }
+    }
+
+    private long calculateGreater(Node node) {
+        long first = calculateLiteralValues(node.getChilds().get(0));
+        long second = calculateLiteralValues(node.getChilds().get(1));
+        if (first > second) {
+            node.setLiteralValue(1);
+            return 1;
+        } else {
+            node.setLiteralValue(0);
+            return 0;
+        }
+    }
+
+    private long calculateMax(Node node) {
+        long max = Long.MIN_VALUE;
+        for (Node p : node.getChilds()) {
+            long t = calculateLiteralValues(p);
+            if (t > max) {
+                max = t;
             }
         }
-        return transVal;
+        node.setLiteralValue(max);
+        return max;
     }
 
-    private ArrayList<String> getListForTransmission() {
-        ArrayList<String> helper = new ArrayList<>();
-        return getListForTransmissionRec(helper, "");
-    }
-
-    private ArrayList<String> getListForTransmissionRec(ArrayList<String> helper, String current) {
-        while (!partTwoList.isEmpty()) {
-            current = partTwoList.remove(0);
-            getListForTransmissionRec(helper, current);
-            helper.add(current);
-
-
+    private long calculateMin(Node node) {
+        long min = Long.MAX_VALUE;
+        for (Node p : node.getChilds()) {
+            long t = calculateLiteralValues(p);
+            if (t < min) {
+                min = t;
+            }
         }
-        return helper;
+        node.setLiteralValue(min);
+        return min;
+    }
+
+    private long calculateProd(Node node) {
+        long sum = 1L;
+        for (Node p : node.getChilds()) {
+            sum *= calculateLiteralValues(p);
+        }
+        node.setLiteralValue(sum);
+        return sum;
+    }
+
+    private Node validatePacket() {
+        long currVersion = binaryToDecimal((partTwoList.get(counter) + partTwoList.get(counter+1) + partTwoList.get(counter+2)));
+        long currID = binaryToDecimal((partTwoList.get(counter+3) + partTwoList.get(counter+4) + partTwoList.get(counter+5)));
+        counter += 6;
+        Node newNode = new Node(currVersion, currID);
+        if (currID == 4) {
+            getLiteralValue(newNode);
+        } else {
+            getOperatorPacket(newNode);
+        }
+        return newNode;
+    }
+
+    private void getOperatorPacket(Node node) {
+        long lengthTypeID = Long.parseLong(partTwoList.get(counter));
+        String lengthNumberAsString = "";
+        counter++;
+        //remove length indicators
+        if (lengthTypeID == 0) {
+            //15 bits
+            for (int i = 0; i < 15; i++) {
+                lengthNumberAsString += partTwoList.get(counter);
+                counter++;
+            }
+            long lengthNumber = binaryToDecimal(lengthNumberAsString) + counter;
+            while (lengthNumber > counter) {
+                node.addChild(validatePacket());
+            }
+        } else if (lengthTypeID == 1) {
+            //11 bits
+            for (int i = 0; i < 11; i++) {
+                lengthNumberAsString += partTwoList.get(counter);
+                counter++;
+            }
+            long lengthNumber = binaryToDecimal(lengthNumberAsString);
+            for (int i = 0; i < lengthNumber; i++) {
+                node.addChild(validatePacket());
+            }
+        }
+    }
+
+    private void getLiteralValue(Node node) {
+        String literalAsString = "";
+        String lastTracker = partTwoList.get(counter);
+        counter++;
+        while (!lastTracker.equals("0")) {
+            for (int i = 0; i < 4; i++) {
+                literalAsString += partTwoList.get(counter);
+                counter++;
+            }
+            lastTracker = partTwoList.get(counter);
+            counter++;
+        }
+        for (int i = 0; i < 4; i++) {
+            literalAsString += partTwoList.get(counter);
+            counter++;
+        }
+
+        node.setLiteralValue(binaryToDecimal(literalAsString));
+
     }
 
 
-    private int binaryToLabels(ArrayList<String> list) {
-        int sum = 0;
-        partTwoList = new ArrayList<>();
+    private long getVersionSum(ArrayList<String> list) {
+        long sum = 0;
         while (!list.isEmpty() && list.size() > 6) {
             String packetVersionAsString = list.remove(0) + list.remove(0) + list.remove(0);
             String packetIDAsString = list.remove(0) + list.remove(0) + list.remove(0);
-            int packetVersion = binaryToDecimal(packetVersionAsString);
+            long packetVersion = binaryToDecimal(packetVersionAsString);
             String subPackNumb = "";
-            int packetID = binaryToDecimal(packetIDAsString);
+            long packetID = binaryToDecimal(packetIDAsString);
             if (packetID == 4) {
                 //packet is Literal
                 String lastTracker = list.remove(0);
-                //last group
-                if (lastTracker.equals("0")) {
+                //while not last group
+                while (!lastTracker.equals("0")) {
+                    //remove 4 last numbers of group
                     for (int i = 0; i < 4; i++) {
                         subPackNumb += list.remove(0);
                     }
-                } else {
-                    //as long as first number of new group is 1, its not last group
-                    while (!lastTracker.equals("0")) {
-                        //remove 4 last numbers of group
-                        for (int i = 0; i < 4; i++) {
-                            subPackNumb += list.remove(0);
-                        }
-                        //remove first of group
-                        lastTracker = list.remove(0);
-                    }
-                    //last group
-                    for (int i = 0; i < 4; i++) {
-                        subPackNumb += list.remove(0);
-                    }
+                    //remove first of group
+                    lastTracker = list.remove(0);
                 }
-                partTwoList.add(subPackNumb);
+                //last group
+                for (int i = 0; i < 4; i++) {
+                    subPackNumb += list.remove(0);
+                }
             } else {
-                //operator
-                partTwoList.add(getOperator(packetID));
-                String lengthTypeID = list.remove(0);
-                if (binaryToDecimal(lengthTypeID) == 0 && list.size() >= 15) {
+                //add operator to list
+                long lengthTypeID = Integer.parseInt(list.remove(0));
+                //remove length indicators
+                if (lengthTypeID == 0 && list.size() >= 15) {
                     //15 bits
                     for (int i = 0; i < 15; i++) {
-                        subPackNumb += list.remove(0);
+                        list.remove(0);
                     }
-                } else if (binaryToDecimal(lengthTypeID) == 1 && list.size() >= 11) {
+                } else if (lengthTypeID == 1 && list.size() >= 11) {
                     //11 bits
                     for (int i = 0; i < 11; i++) {
-                        subPackNumb += list.remove(0);
+                        list.remove(0);
                     }
                 }
             }
@@ -260,32 +291,15 @@ public class DaySixteen {
         return sum;
     }
 
-    private String getOperator(int packetID) {
-        if (packetID == 0) {
-            return "+";
-        } else if (packetID == 1) {
-            return "*";
-        } else if (packetID == 2) {
-            return "min";
-        } else if (packetID == 3) {
-            return "max";
-        } else if (packetID == 5) {
-            return "g";
-        } else if (packetID == 6) {
-            return "l";
-        } else if (packetID == 7) {
-            return "e";
-        }
-        return null;
-    }
 
-    private int binaryToDecimal(String s) {
-        int c = 3;
+
+    private long binaryToDecimal(String s) {
         while (s.length() % 4 != 0) {
             s = "0" + s;
         }
         String[] tmp = s.split("");
-        int res = 0;
+        long res = 0;
+        long c = tmp.length-1;
         for (int i = 0; i < tmp.length; i++) {
             if (tmp[i].equals("1")) {
                 res += Math.pow(2, c);

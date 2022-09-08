@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import java.util.Scanner;
 
 
-public class Main {
+public class  Main {
 
     static String day;
     static String puzzleNumber;
