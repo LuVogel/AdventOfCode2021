@@ -5,18 +5,45 @@ import java.util.ArrayList;
 
 public class Day1 {
 
+    public boolean testCase;
+
+    public Day1(String puzzleNumber, boolean testCase) {
+        this.testCase = testCase;
+        if (puzzleNumber.equals("1")) {
+            getCountForFirstPuzzle();
+        } else if (puzzleNumber.equals("2")) {
+            getCountForSecondPuzzle();
+        }
+    }
+
     /**
      * right answer for 1.1.21 adventOfCode puzzle 1
      * @throws IOException
      */
-    public static void getCountForFirstPuzzle() throws IOException {
-        File file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep.txt");
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String s;
+    public void getCountForFirstPuzzle() {
+        File file;
+        if (testCase) {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep_test.txt");
+        } else {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep.txt");
+
+        }
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String s = "";
         int first = 0;
         int sec;
         int counter = 0;
-        while ((s = reader.readLine()) != null) {
+        while (true) {
+            try {
+                if (!((s = reader.readLine()) != null)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if (first == 0) {
                 first = Integer.parseInt(s);
             } else {
@@ -34,13 +61,28 @@ public class Day1 {
      * right answer for 1.1.21 adventOfCode puzzle 2
      * @throws IOException
      */
-    public static void getCountForSecondPuzzle() throws IOException {
-        File file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep.txt");
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+    public void getCountForSecondPuzzle() {
+        File file;
+        if (testCase) {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep_test.txt");
+        } else {
+            file = new File("D:\\Dokumente\\Privat\\Programme\\advent_of_code_21\\input_files\\input_day_1_sonar_sweep.txt");
+        }
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         ArrayList<String> arrayList = new ArrayList<>();
         ArrayList<String> measure = new ArrayList<>();
-        String s;
-        while((s = reader.readLine()) != null) {
+        String s = "";
+        while(true) {
+            try {
+                if (!((s = reader.readLine()) != null)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             arrayList.add(s);
         }
         int a, b, c;

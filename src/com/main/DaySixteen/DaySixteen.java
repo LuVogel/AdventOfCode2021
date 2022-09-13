@@ -34,18 +34,12 @@ public class DaySixteen {
             return childs;
         }
 
-        public long getPacketVersion() {
-            return packetVersion;
-        }
-
         public long getLiteralValue() {
             return literalValue;
         }
-
         public void setLiteralValue(long literalValue) {
             this.literalValue = literalValue;
         }
-
         public void addChild(Node child) {
             childs.add(child);
         }
