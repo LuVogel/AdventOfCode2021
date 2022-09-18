@@ -11,7 +11,6 @@ public class DaySeventeen {
     int yMaxTargetPos;
     int xMaxTargetPos;
     int yMinTargetPos;
-    int maxYPosition;
 
     public DaySeventeen(String puzzleNumber, boolean testCase) {
         this.puzzleNumber = puzzleNumber;
@@ -20,33 +19,33 @@ public class DaySeventeen {
         System.out.println("target area: x=" + xMinTargetPos + ".." + xMaxTargetPos + ", y=" + yMinTargetPos + ".." + yMaxTargetPos);
         if (puzzleNumber.equals("1")) {
             Puzzle1();
+        } else if (puzzleNumber.equals("2")) {
+            Puzzle2();
         }
     }
 
     private void Puzzle1() {
-        maxYPosition = Integer.MIN_VALUE;
+        int res = ((yMaxTargetPos * yMaxTargetPos) + yMaxTargetPos) / 2;
+        System.out.println("highest y position reached on this trajectory is: " + res);
+    }
+
+    private void Puzzle2() {
+        int res = 0;
         for (int i = 0; i < 2000; i++) {
             for (int j = -2000; j < 2000; j++) {
-                int xVelocity = i;
-                int yVelocity = j;
-                maxYPosition = shootTargetWithVelocity(xVelocity, yVelocity);
+                res += shootTargetWithVelocity(i, j);
             }
         }
 
-        System.out.println("highest y position reached: " + maxYPosition);
-
+        System.out.println("amount of distinct velocities: " + res);
     }
 
     private int shootTargetWithVelocity(int xVelocity, int yVelocity) {
         int xPos = 0;
         int yPos = 0;
-        int tempMaxY = Integer.MIN_VALUE;
         while (true) {
             xPos += xVelocity;
             yPos += yVelocity;
-            if (tempMaxY < yPos) {
-                tempMaxY = yPos;
-            }
             if (xVelocity < 0) {
                 xVelocity += 1;
             } else if (xVelocity > 0) {
@@ -54,13 +53,9 @@ public class DaySeventeen {
             }
             yVelocity -= 1;
             if (checkForWin(xPos, yPos)) {
-                if (tempMaxY > maxYPosition) {
-                    maxYPosition = tempMaxY;
-                }
-                return maxYPosition;
-
+                return 1;
             } else if (checkForLoose(xPos, yPos)) {
-                return maxYPosition;
+                return 0;
             }
         }
     }
@@ -73,7 +68,7 @@ public class DaySeventeen {
     }
 
     private boolean checkForWin(int xPos, int yPos) {
-        if ((xMinTargetPos <= xPos) && (xPos <= xMaxTargetPos) && (yMinTargetPos <= yPos) && (yPos <= yMaxTargetPos)) {
+        if ((xMinTargetPos <= xPos) && (xPos <= xMaxTargetPos) && (yPos <= yMinTargetPos) && (yMaxTargetPos <= yPos)) {
             return true;
         }
         return false;
