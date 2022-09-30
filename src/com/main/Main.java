@@ -3,6 +3,7 @@ package com.main;
 
 
 import com.main.Day8.Day8;
+import com.main.DayEighteen.DayEighteen;
 import com.main.DayEleven.DayEleven;
 import com.main.DayFifteen.DayFifteen;
 
@@ -88,6 +89,8 @@ public class  Main {
                 DaySixteen daySixteen = new DaySixteen(puzzleNumber, testCase);
             } else if (day.equals("17")) {
                 DaySeventeen daySeventeen = new DaySeventeen(puzzleNumber, testCase);
+            } else if (day.equals("18")) {
+                DayEighteen dayEighteen = new DayEighteen(puzzleNumber, testCase);
             }
         }
 
