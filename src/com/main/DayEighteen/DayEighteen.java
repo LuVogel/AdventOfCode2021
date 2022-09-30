@@ -4,6 +4,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 
 public class DayEighteen {
@@ -36,11 +37,88 @@ public class DayEighteen {
     public DayEighteen(String puzzleNumber, boolean testCase) {
         this.puzzleNumber = puzzleNumber;
         this.testCase = testCase;
-        readInput();
+        ArrayList<Node> nodeList = readInput();
+        if (puzzleNumber.equals("1")) {
+            Puzzle1(nodeList);
+        } else if (puzzleNumber.equals("2")) {
+            Puzzle2(nodeList);
+        }
+    }
+
+    private class TestObject {
+        public Node testNode;
+        public int testI;
+        public int testJ;
+        public String fish1;
+        public String fish2;
+
+        public TestObject(Node testNode, int testI, int testJ, String fish1, String fish2) {
+            this.testNode =  testNode;
+            this.testI = testI;
+            this.testJ = testJ;
+            this.fish1 = fish1;
+            this.fish2 = fish2;
+        }
+    }
+
+    public Node CopyTree(Node node, Node currentParent) {
+        if (node == null) {
+            return null;
+        }
+        Node n = new Node(node.val, currentParent);
+        n.left = CopyTree(node.left, n);
+        n.right = CopyTree(node.right, n);
+        return n;
+    }
+
+    private void Puzzle2(ArrayList<Node> list) {
+        ArrayList<Integer> sumList = new ArrayList<>();
+        ArrayList<Integer> nodes = new ArrayList<>();
+        ArrayList<Node> nodeList;
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.size(); j++) {
+                if (i != j) {
+                    nodeList = new ArrayList<>(list);
+                    Node n1 = CopyTree(nodeList.get(i), null);
+                    Node n2 = CopyTree(nodeList.get(j), null);
+                    Node sumNode = addTree(n1, n2);
+                    while (explodeNotMet(sumNode) || splitNotMet(sumNode)) {
+                        if (explodeNotMet(sumNode)) {
+                            explode(sumNode);
+                        } else if (splitNotMet(sumNode)) {
+                            split(sumNode);
+                        }
+                    }
+                    sumList.add(calculateMagnitude(sumNode));
+                }
+            }
+        }
+        int maxMagnitude = Collections.max(sumList);
+        System.out.println("\n---------------------------------\n" +
+                "the largest magnitude of any sum of two different numbers is " + maxMagnitude
+                + "\n---------------------------------");
 
     }
 
-    private void readInput() {
+    private void Puzzle1(ArrayList<Node> nodeList) {
+        Node current = nodeList.get(0);
+        for (int i = 1; i < nodeList.size(); i++) {
+            Node toAdd = nodeList.get(i);
+            current = addTree(current, toAdd);
+            while (explodeNotMet(current) || splitNotMet(current)) {
+                if (explodeNotMet(current)) {
+                    explode(current);
+                } else if (splitNotMet(current)) {
+                    split(current);
+                }
+            }
+        }
+        int magnitude = calculateMagnitude(current);
+        System.out.println("\n---------------------------------\n" +
+                "the magnitude of the final sum is " + magnitude + "\n---------------------------------");
+    }
+
+    private ArrayList<Node> readInput() {
         String os = System.getProperty("os.name");
         File file = null;
         if (os.equals("Mac OS X")) {
@@ -77,21 +155,7 @@ public class DayEighteen {
             Node tmp = getPairFromLine(line);
             nodeList.add(tmp);
         }
-        Node current = nodeList.get(0);
-        for (int i = 1; i < nodeList.size(); i++) {
-            Node toAdd = nodeList.get(i);
-            current = addTree(current, toAdd);
-            while (explodeNotMet(current) || splitNotMet(current)) {
-                if (explodeNotMet(current)) {
-                    explode(current);
-                } else if (splitNotMet(current)) {
-                    split(current);
-                }
-            }
-        }
-        int magnitude = calculateMagnitude(current);
-        System.out.println("\n---------------------------------\n" +
-                            "the magnitude of the final sum is " + magnitude + "\n---------------------------------");
+        return nodeList;
     }
 
     private int calculateMagnitude(Node node) {
@@ -273,22 +337,6 @@ public class DayEighteen {
         node.right = toAdd;
         return node;
     }
-
-    private void printPreorder(Node node) {
-        if (node == null) {
-            return;
-        }
-        String t = "";
-        if (!node.val.equals("root")) {
-            t = node.val;
-        }
-        System.out.print(t + " ");
-        printPreorder(node.left);
-        printPreorder(node.right);
-
-
-    }
-
 
     private Node getPairFromLine(String line) {
         String[] split = line.split("");
